@@ -1,0 +1,88 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { CalendarCheck, CalendarClock, CheckCircle2, Settings } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const NAV_ITEMS = [
+  { href: "/app", label: "Hôm nay", icon: CalendarCheck },
+  { href: "/app/upcoming", label: "Sắp tới", icon: CalendarClock },
+  { href: "/app/completed", label: "Hoàn thành", icon: CheckCircle2 },
+  { href: "/settings", label: "Cài đặt", icon: Settings },
+] as const;
+
+export function NavBar() {
+  const pathname = usePathname();
+
+  // Plain <a> tags (full page navigation), not next/link — the reminder list
+  // must always reflect the database exactly, and Next.js's client-side RSC
+  // navigation could occasionally race (two overlapping navigations landing
+  // out of order) and show a stale/empty snapshot for a couple of seconds
+  // before self-correcting. A full navigation has no such race: every tab
+  // switch is a clean, single server round-trip. Worth the small loss of
+  // "instant" SPA transitions for guaranteed data correctness here.
+  return (
+    <>
+      {/* Mobile: floating bottom tab bar */}
+      <nav className="sm:hidden fixed bottom-3 inset-x-3 z-40 rounded-3xl bg-card shadow-lg shadow-black/5 px-2 py-2">
+        <ul className="grid grid-cols-4">
+          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+            const active = pathname === href;
+            return (
+              <li key={href}>
+                <a
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className="flex flex-col items-center gap-1 py-1"
+                >
+                  <span
+                    className={cn(
+                      "flex items-center justify-center size-9 rounded-2xl transition-colors",
+                      active ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                    )}
+                  >
+                    <Icon className="size-[18px]" strokeWidth={active ? 2.5 : 2} />
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[10px] font-medium",
+                      active ? "text-foreground" : "text-muted-foreground"
+                    )}
+                  >
+                    {label}
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* Desktop / tablet: side nav */}
+      <nav className="hidden sm:flex sm:flex-col sm:w-60 sm:shrink-0 sm:min-h-svh sm:py-6 sm:px-4 sm:gap-1 sm:bg-card">
+        <a href="/app" className="px-3 pb-8 text-lg font-bold tracking-tight">
+          Smart Reminder
+        </a>
+        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href;
+          return (
+            <a
+              key={href}
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-medium transition-colors",
+                active
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              )}
+            >
+              <Icon className="size-4.5" strokeWidth={active ? 2.5 : 2} />
+              {label}
+            </a>
+          );
+        })}
+      </nav>
+    </>
+  );
+}

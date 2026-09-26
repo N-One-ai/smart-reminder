@@ -1,0 +1,260 @@
+"use client";
+
+import { useState } from "react";
+import { Loader2, Sparkles, Calendar, Clock, Repeat, X } from "lucide-react";
+import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { parseReminderEdit } from "@/lib/ai/actions";
+import type { ValidatedAIEditResult } from "@/lib/ai/validate";
+import { buildAIContext, formatDayLabel } from "@/lib/utils/date";
+import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
+import type { Reminder } from "@/types/reminder";
+
+const RECURRENCE_LABEL: Record<string, string> = {
+  daily: "Mỗi ngày",
+  weekly: "Mỗi tuần",
+  monthly: "Mỗi tháng",
+  yearly: "Mỗi năm",
+};
+
+// Below this, the model itself said it couldn't tell what should change —
+// force an explicit confirm instead of silently applying a guess.
+const LOW_CONFIDENCE_THRESHOLD = 0.4;
+
+type Mode = "input" | "parsing" | "preview";
+
+function recurrenceLabel(r: Reminder["repeat_rule"]): string {
+  return r ? RECURRENCE_LABEL[r.frequency] : "Không";
+}
+
+function recurrenceEqual(a: Reminder["repeat_rule"], b: ValidatedAIEditResult["recurrence"]): boolean {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  return (
+    a.frequency === b.frequency &&
+    a.interval === b.interval &&
+    JSON.stringify(a.days ?? []) === JSON.stringify(b.days ?? []) &&
+    (a.day_of_month ?? null) === (b.day_of_month ?? null)
+  );
+}
+
+function DiffField({
+  icon,
+  label,
+  before,
+  after,
+  changed,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  before: string;
+  after: string;
+  changed: boolean;
+}) {
+  return (
+    <div className="flex items-start gap-2.5 text-sm">
+      <span className="text-muted-foreground mt-0.5">{icon}</span>
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <span className="text-xs text-muted-foreground">{label}</span>
+        {changed ? (
+          <span className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-muted-foreground line-through">{before}</span>
+            <span className="font-medium text-primary">{after}</span>
+          </span>
+        ) : (
+          <span>{after}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function ReminderQuickEdit({
+  reminder,
+  onApply,
+  onClose,
+  saving,
+}: {
+  reminder: Reminder;
+  onApply: (values: {
+    title: string;
+    date: string;
+    time: string;
+    recurrence: ValidatedAIEditResult["recurrence"];
+  }) => void;
+  onClose: () => void;
+  saving: boolean;
+}) {
+  const [text, setText] = useState("");
+  const [mode, setMode] = useState<Mode>("input");
+  const [result, setResult] = useState<ValidatedAIEditResult | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!text.trim() || mode === "parsing") return;
+    setMode("parsing");
+    try {
+      const context = buildAIContext();
+      const res = await parseReminderEdit({
+        currentTitle: reminder.title,
+        currentDate: reminder.date,
+        currentTime: reminder.time,
+        currentRecurrence: reminder.repeat_rule,
+        editText: text.trim(),
+        timezone: context.timezone,
+        today: context.currentDate,
+        nowTime: context.currentTime,
+        dayOfWeek: context.dayOfWeek,
+      });
+      if (!res.ok) {
+        toast.error(res.error.message);
+        setMode("input");
+        return;
+      }
+      setResult(res.data);
+      setMode("preview");
+    } catch {
+      toast.error(NETWORK_ERROR_MESSAGE);
+      setMode("input");
+    }
+  }
+
+  if (mode === "preview" && result) {
+    const titleChanged = result.title !== reminder.title;
+    const dateChanged = result.date !== reminder.date;
+    const timeChanged = result.time !== reminder.time;
+    const recurrenceChanged = !recurrenceEqual(reminder.repeat_rule, result.recurrence);
+    const noChange = !titleChanged && !dateChanged && !timeChanged && !recurrenceChanged;
+    const lowConfidence = result.confidence < LOW_CONFIDENCE_THRESHOLD;
+
+    return (
+      <div className="rounded-xl border bg-card p-4 flex flex-col gap-3 animate-in fade-in slide-in-from-top-1">
+        <div className="flex flex-col gap-2.5">
+          <DiffField
+            icon={<Sparkles className="size-3.5" />}
+            label="Tiêu đề"
+            before={reminder.title}
+            after={result.title}
+            changed={titleChanged}
+          />
+          <DiffField
+            icon={<Calendar className="size-3.5" />}
+            label="Ngày"
+            before={formatDayLabel(reminder.date)}
+            after={formatDayLabel(result.date)}
+            changed={dateChanged}
+          />
+          <DiffField
+            icon={<Clock className="size-3.5" />}
+            label="Giờ"
+            before={reminder.time}
+            after={result.time}
+            changed={timeChanged}
+          />
+          <DiffField
+            icon={<Repeat className="size-3.5" />}
+            label="Lặp lại"
+            before={recurrenceLabel(reminder.repeat_rule)}
+            after={recurrenceLabel(result.recurrence)}
+            changed={recurrenceChanged}
+          />
+        </div>
+
+        {(noChange || lowConfidence) && (
+          <p className="text-xs text-amber-600 dark:text-amber-500">
+            {noChange
+              ? "Không nhận diện được thay đổi cụ thể nào từ câu nói — thử diễn đạt rõ hơn."
+              : "Mình chưa chắc chắn về thay đổi này — kiểm tra kỹ trước khi xác nhận."}
+          </p>
+        )}
+
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() =>
+              onApply({
+                title: result.title,
+                date: result.date,
+                time: result.time,
+                recurrence: result.recurrence,
+              })
+            }
+            disabled={saving || noChange}
+            className="flex-1"
+          >
+            {saving && <Loader2 className="size-3.5 animate-spin" />}
+            Xác nhận
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setResult(null);
+              setText("");
+              setMode("input");
+            }}
+            disabled={saving}
+            className="flex-1"
+          >
+            Sửa lại câu nói
+          </Button>
+          <Button size="sm" variant="ghost" onClick={onClose} disabled={saving} aria-label="Đóng">
+            <X className="size-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="rounded-xl border bg-card p-4 flex flex-col gap-2.5">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          Sửa nhanh bằng câu nói
+        </p>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={onClose}
+          className="size-6 -mt-1 -mr-1"
+          aria-label="Đóng"
+        >
+          <X className="size-3.5" />
+        </Button>
+      </div>
+      <div className="relative">
+        <Textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="vd: đổi giờ họp sang 3h chiều"
+          rows={2}
+          maxLength={500}
+          autoFocus
+          className="resize-none text-sm pr-11"
+          disabled={mode === "parsing"}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit(e);
+            }
+          }}
+        />
+        <Button
+          type="submit"
+          size="icon"
+          disabled={mode === "parsing" || !text.trim()}
+          className="absolute right-1.5 bottom-1.5 size-8"
+          aria-label="Gửi"
+        >
+          {mode === "parsing" ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Sparkles className="size-4" />
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+}

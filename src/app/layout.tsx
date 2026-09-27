@@ -1,16 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Baloo_2, Nunito } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegister } from "@/components/layout/service-worker-register";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Rounded, friendly pairing to match the app's green/consumer-fitness-app
+// visual direction: Baloo 2 (bold, chunky terminals) for headings and big
+// stat numbers, Nunito (rounded but legible at body sizes) for everything
+// else. Both are Google Fonts (OFL) with full Vietnamese diacritic support.
+const balooDisplay = Baloo_2({
+  variable: "--font-baloo",
   subsets: ["latin", "vietnamese"],
+  weight: ["600", "700", "800"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const nunitoSans = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin", "vietnamese"],
 });
 
@@ -30,14 +35,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#4db262",
+  themeColor: "#00a33d",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="vi"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${balooDisplay.variable} ${nunitoSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}

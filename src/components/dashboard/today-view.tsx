@@ -29,7 +29,7 @@ export function TodayView({ reminders, userName }: { reminders: Reminder[]; user
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-0.5">
         <p className="text-sm text-muted-foreground">{greetingForHour()} 👋</p>
-        <h1 className="text-xl font-bold tracking-tight">{firstName || "bạn"}</h1>
+        <h1 className="font-heading text-xl font-bold tracking-tight">{firstName || "bạn"}</h1>
       </div>
 
       <WeeklyProgressCard completedDays={weekly.completedDays} totalDays={weekly.totalDays} />

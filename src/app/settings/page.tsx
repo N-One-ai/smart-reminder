@@ -9,7 +9,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-md">
-      <h1 className="text-xl font-semibold tracking-tight">Cài đặt</h1>
+      <h1 className="font-heading text-xl font-bold tracking-tight">Cài đặt</h1>
 
       <SettingsForm
         initialName={user?.name ?? ""}

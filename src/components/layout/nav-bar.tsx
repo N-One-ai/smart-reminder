@@ -60,7 +60,7 @@ export function NavBar() {
 
       {/* Desktop / tablet: side nav */}
       <nav className="hidden sm:flex sm:flex-col sm:w-60 sm:shrink-0 sm:min-h-svh sm:py-6 sm:px-4 sm:gap-1 sm:bg-card">
-        <a href="/app" className="px-3 pb-8 text-lg font-bold tracking-tight">
+        <a href="/app" className="px-3 pb-8 font-heading text-lg font-bold tracking-tight">
           Smart Reminder
         </a>
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {

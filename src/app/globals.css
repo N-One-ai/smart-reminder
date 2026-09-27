@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-geist-sans);
+  --font-sans: var(--font-nunito);
+  --font-mono: ui-monospace, monospace;
+  --font-heading: var(--font-baloo);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -55,34 +55,35 @@
   --card-foreground: oklch(0.22 0.015 145);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.22 0.015 145);
-  /* Soft, friendly green — the app's single accent. */
-  --primary: oklch(0.685 0.15 148);
+  /* Vivid grass green — the app's single accent, matching the reference's
+     fitness-app hero cards rather than the previous, softer tint. */
+  --primary: oklch(0.62 0.19 149);
   --primary-foreground: oklch(0.99 0.01 145);
   --secondary: oklch(0.96 0.008 96);
   --secondary-foreground: oklch(0.22 0.015 145);
   --muted: oklch(0.96 0.008 96);
   --muted-foreground: oklch(0.53 0.02 140);
   /* Light green tint — card backgrounds, badges, checked states. */
-  --accent: oklch(0.94 0.045 148);
-  --accent-foreground: oklch(0.4 0.09 148);
+  --accent: oklch(0.94 0.05 149);
+  --accent-foreground: oklch(0.38 0.1 149);
   --destructive: oklch(0.6 0.2 25);
   --border: oklch(0.93 0.008 96);
   --input: oklch(0.93 0.008 96);
-  --ring: oklch(0.685 0.15 148 / 50%);
-  --chart-1: oklch(0.685 0.15 148);
-  --chart-2: oklch(0.78 0.12 148);
-  --chart-3: oklch(0.87 0.08 148);
+  --ring: oklch(0.62 0.19 149 / 50%);
+  --chart-1: oklch(0.62 0.19 149);
+  --chart-2: oklch(0.74 0.14 149);
+  --chart-3: oklch(0.85 0.09 149);
   --chart-4: oklch(0.55 0.03 140);
   --chart-5: oklch(0.35 0.02 140);
   --radius: 1.125rem;
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.22 0.015 145);
-  --sidebar-primary: oklch(0.685 0.15 148);
+  --sidebar-primary: oklch(0.62 0.19 149);
   --sidebar-primary-foreground: oklch(0.99 0.01 145);
-  --sidebar-accent: oklch(0.94 0.045 148);
-  --sidebar-accent-foreground: oklch(0.4 0.09 148);
+  --sidebar-accent: oklch(0.94 0.05 149);
+  --sidebar-accent-foreground: oklch(0.38 0.1 149);
   --sidebar-border: oklch(0.93 0.008 96);
-  --sidebar-ring: oklch(0.685 0.15 148 / 50%);
+  --sidebar-ring: oklch(0.62 0.19 149 / 50%);
 }
 
 .dark {
@@ -92,31 +93,31 @@
   --card-foreground: oklch(0.96 0.006 96);
   --popover: oklch(0.24 0.014 145);
   --popover-foreground: oklch(0.96 0.006 96);
-  --primary: oklch(0.72 0.15 148);
+  --primary: oklch(0.68 0.18 149);
   --primary-foreground: oklch(0.16 0.02 145);
   --secondary: oklch(0.29 0.014 145);
   --secondary-foreground: oklch(0.96 0.006 96);
   --muted: oklch(0.29 0.014 145);
   --muted-foreground: oklch(0.68 0.02 140);
-  --accent: oklch(0.32 0.05 148);
-  --accent-foreground: oklch(0.85 0.08 148);
+  --accent: oklch(0.32 0.06 149);
+  --accent-foreground: oklch(0.85 0.09 149);
   --destructive: oklch(0.65 0.2 25);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.72 0.15 148 / 50%);
-  --chart-1: oklch(0.72 0.15 148);
-  --chart-2: oklch(0.6 0.12 148);
-  --chart-3: oklch(0.45 0.08 148);
+  --ring: oklch(0.68 0.18 149 / 50%);
+  --chart-1: oklch(0.68 0.18 149);
+  --chart-2: oklch(0.58 0.14 149);
+  --chart-3: oklch(0.45 0.1 149);
   --chart-4: oklch(0.68 0.02 140);
   --chart-5: oklch(0.85 0.02 140);
   --sidebar: oklch(0.24 0.014 145);
   --sidebar-foreground: oklch(0.96 0.006 96);
-  --sidebar-primary: oklch(0.72 0.15 148);
+  --sidebar-primary: oklch(0.68 0.18 149);
   --sidebar-primary-foreground: oklch(0.16 0.02 145);
-  --sidebar-accent: oklch(0.32 0.05 148);
-  --sidebar-accent-foreground: oklch(0.85 0.08 148);
+  --sidebar-accent: oklch(0.32 0.06 149);
+  --sidebar-accent-foreground: oklch(0.85 0.09 149);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.72 0.15 148 / 50%);
+  --sidebar-ring: oklch(0.68 0.18 149 / 50%);
 }
 
 @layer base {

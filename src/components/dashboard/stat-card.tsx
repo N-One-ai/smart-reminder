@@ -19,9 +19,9 @@ export function StatCard({
         </div>
         <span className="text-sm text-muted-foreground">{label}</span>
       </div>
-      <p className="text-2xl font-bold tracking-tight">
+      <p className="font-heading text-2xl font-bold tracking-tight">
         {value}
-        <span className="text-sm font-medium text-muted-foreground ml-1">{unit}</span>
+        <span className="font-sans text-sm font-medium text-muted-foreground ml-1">{unit}</span>
       </p>
     </div>
   );

@@ -163,7 +163,7 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
       ) : (
         <div className="rounded-xl border bg-card p-5 flex flex-col gap-5">
           <h1
-            className={`text-lg font-semibold ${isCompleted ? "line-through text-muted-foreground" : ""}`}
+            className={`font-heading text-lg font-bold ${isCompleted ? "line-through text-muted-foreground" : ""}`}
           >
             {reminder.title}
           </h1>

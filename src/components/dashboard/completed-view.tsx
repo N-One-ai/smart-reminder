@@ -12,7 +12,7 @@ export function CompletedView({ reminders }: { reminders: Reminder[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold tracking-tight">Đã hoàn thành</h1>
+      <h1 className="font-heading text-xl font-bold tracking-tight">Đã hoàn thành</h1>
 
       {occurrences.length === 0 ? (
         <EmptyState

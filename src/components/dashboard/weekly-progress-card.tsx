@@ -16,13 +16,13 @@ export function WeeklyProgressCard({
   const offset = CIRCUMFERENCE * (1 - ratio);
 
   return (
-    <div className="rounded-3xl bg-accent p-5 flex items-center justify-between gap-4">
+    <div className="rounded-3xl bg-primary p-5 flex items-center justify-between gap-4">
       <div className="flex flex-col gap-3 min-w-0">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-accent-foreground/80">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-primary-foreground/80">
           <Zap className="size-3.5 fill-current" />
           Duy trì thói quen
         </div>
-        <p className="text-lg font-semibold text-accent-foreground leading-snug text-balance">
+        <p className="font-heading text-lg font-bold text-primary-foreground leading-snug text-balance">
           Tiến độ tuần này
         </p>
       </div>
@@ -34,7 +34,7 @@ export function WeeklyProgressCard({
             cy={SIZE / 2}
             r={RADIUS}
             fill="none"
-            stroke="var(--card)"
+            stroke="color-mix(in oklch, var(--primary-foreground) 25%, transparent)"
             strokeWidth={STROKE}
           />
           <circle
@@ -42,7 +42,7 @@ export function WeeklyProgressCard({
             cy={SIZE / 2}
             r={RADIUS}
             fill="none"
-            stroke="var(--primary)"
+            stroke="var(--primary-foreground)"
             strokeWidth={STROKE}
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
@@ -51,10 +51,10 @@ export function WeeklyProgressCard({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-lg font-bold text-accent-foreground leading-none">
+          <span className="font-heading text-lg font-bold text-primary-foreground leading-none">
             {completedDays}
           </span>
-          <span className="text-[10px] text-accent-foreground/70 leading-none mt-0.5">
+          <span className="text-[10px] text-primary-foreground/70 leading-none mt-0.5">
             /{totalDays} ngày
           </span>
         </div>

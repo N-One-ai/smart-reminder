@@ -20,7 +20,7 @@ export function UpcomingView({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold tracking-tight">Sắp tới</h1>
+      <h1 className="font-heading text-xl font-bold tracking-tight">Sắp tới</h1>
 
       {groups.length === 0 ? (
         <EmptyState

@@ -161,7 +161,7 @@ export function ImageScanScreen({
             Chọn từ thư viện
           </button>
           <p className="text-xs text-muted-foreground text-center max-w-xs pt-2">
-            Chụp hoặc chọn ảnh ghi chú, hóa đơn, vé, poster, lịch... Smart Reminder sẽ tự đọc và đề xuất
+            Chụp hoặc chọn ảnh ghi chú, hóa đơn, vé, poster, lịch... Rymi sẽ tự đọc và đề xuất
             lời nhắc.
           </p>
         </div>

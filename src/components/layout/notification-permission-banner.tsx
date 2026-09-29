@@ -38,7 +38,7 @@ export function NotificationPermissionBanner() {
       return;
     }
     if (result.ok) {
-      toast.success("Đã bật thông báo đẩy — Smart Reminder sẽ nhắc bạn kể cả khi không mở app");
+      toast.success("Đã bật thông báo đẩy — Rymi sẽ nhắc bạn kể cả khi không mở app");
     }
   }
 
@@ -51,7 +51,7 @@ export function NotificationPermissionBanner() {
     <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3">
       <Bell className="size-4 text-accent-foreground shrink-0" />
       <p className="flex-1 text-sm">
-        Bật thông báo để Smart Reminder nhắc bạn đúng giờ khi app đang mở.
+        Bật thông báo để Rymi nhắc bạn đúng giờ khi app đang mở.
       </p>
       <Button size="sm" onClick={handleEnable}>
         Bật thông báo

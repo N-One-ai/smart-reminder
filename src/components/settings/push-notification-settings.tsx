@@ -91,7 +91,7 @@ export function PushNotificationSettings() {
           {status === "denied"
             ? "Bạn đã chặn quyền thông báo — cần bật lại trong cài đặt trình duyệt."
             : status === "subscribed"
-              ? "Đang bật — Smart Reminder sẽ nhắc bạn kể cả khi không mở app."
+              ? "Đang bật — Rymi sẽ nhắc bạn kể cả khi không mở app."
               : "Nhận nhắc nhở kể cả khi không mở app."}
         </p>
       </div>

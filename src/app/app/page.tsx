@@ -11,5 +11,11 @@ export default async function TodayPage() {
     getCurrentUser(),
   ]);
 
-  return <TodayView reminders={reminders} userName={user?.name || user?.email || ""} />;
+  return (
+    <TodayView
+      reminders={reminders}
+      userName={user?.name || user?.email || ""}
+      userEmail={user?.email ?? ""}
+    />
+  );
 }

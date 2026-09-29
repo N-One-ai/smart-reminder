@@ -17,7 +17,15 @@ import {
 import { signOut } from "@/lib/auth/actions";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
 
-export function UserMenu({ name, email }: { name: string; email: string }) {
+export function UserMenu({
+  name,
+  email,
+  avatarSize = "default",
+}: {
+  name: string;
+  email: string;
+  avatarSize?: "default" | "lg";
+}) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const initial = (name || "?").charAt(0).toUpperCase();
@@ -41,8 +49,8 @@ export function UserMenu({ name, email }: { name: string; email: string }) {
           aria-label={`Menu tài khoản: ${name}`}
           className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Avatar className="size-8">
-            <AvatarFallback className="text-xs font-medium">{initial}</AvatarFallback>
+          <Avatar size={avatarSize}>
+            <AvatarFallback className="font-medium">{initial}</AvatarFallback>
           </Avatar>
         </button>
       </DropdownMenuTrigger>

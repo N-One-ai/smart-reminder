@@ -55,19 +55,19 @@ export async function parseReminderText(
       if (attempt === 2) {
         return err(
           "INVALID_AI_OUTPUT",
-          "Smart Reminder chưa hiểu được yêu cầu. Hãy thử diễn đạt khác."
+          "Rymi chưa hiểu được yêu cầu. Hãy thử diễn đạt khác."
         );
       }
     } catch (e) {
       console.error(`[parseReminderText] provider error (attempt ${attempt})`, e);
       if (attempt === 2) {
-        return err("AI_ERROR", "Smart Reminder chưa hiểu được yêu cầu. Hãy thử lại.");
+        return err("AI_ERROR", "Rymi chưa hiểu được yêu cầu. Hãy thử lại.");
       }
     }
   }
 
   // Unreachable, but keeps TypeScript satisfied.
-  return err("AI_ERROR", "Smart Reminder chưa hiểu được yêu cầu. Hãy thử lại.");
+  return err("AI_ERROR", "Rymi chưa hiểu được yêu cầu. Hãy thử lại.");
 }
 
 /**
@@ -159,17 +159,17 @@ export async function parseReminderEdit(
       if (attempt === 2) {
         return err(
           "INVALID_AI_OUTPUT",
-          "Smart Reminder chưa hiểu được yêu cầu chỉnh sửa. Hãy thử diễn đạt khác."
+          "Rymi chưa hiểu được yêu cầu chỉnh sửa. Hãy thử diễn đạt khác."
         );
       }
     } catch (e) {
       console.error(`[parseReminderEdit] provider error (attempt ${attempt})`, e);
       if (attempt === 2) {
-        return err("AI_ERROR", "Smart Reminder chưa hiểu được yêu cầu. Hãy thử lại.");
+        return err("AI_ERROR", "Rymi chưa hiểu được yêu cầu. Hãy thử lại.");
       }
     }
   }
 
   // Unreachable, but keeps TypeScript satisfied.
-  return err("AI_ERROR", "Smart Reminder chưa hiểu được yêu cầu. Hãy thử lại.");
+  return err("AI_ERROR", "Rymi chưa hiểu được yêu cầu. Hãy thử lại.");
 }

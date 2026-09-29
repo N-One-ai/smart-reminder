@@ -2,6 +2,7 @@ import { CalendarCheck } from "lucide-react";
 import { SmartInput } from "@/components/reminder/smart-input";
 import { ReminderListItem } from "@/components/reminder/reminder-list-item";
 import { EmptyState } from "@/components/reminder/empty-state";
+import { UserMenu } from "@/components/layout/user-menu";
 import { WeeklyProgressCard } from "./weekly-progress-card";
 import { DayGroupHeader } from "./day-group-header";
 import { expandAllOccurrences } from "@/lib/reminder/recurrence";
@@ -9,7 +10,15 @@ import { computeWeeklyProgress, countPendingToday, countCompletedToday } from "@
 import { addDays, todayKey, greetingForHour } from "@/lib/utils/date";
 import type { Reminder } from "@/types/reminder";
 
-export function TodayView({ reminders, userName }: { reminders: Reminder[]; userName: string }) {
+export function TodayView({
+  reminders,
+  userName,
+  userEmail,
+}: {
+  reminders: Reminder[];
+  userName: string;
+  userEmail: string;
+}) {
   const today = todayKey();
 
   const todayOccurrences = expandAllOccurrences(reminders, today, today);
@@ -22,13 +31,15 @@ export function TodayView({ reminders, userName }: { reminders: Reminder[]; user
   const weekly = computeWeeklyProgress(reminders, today);
   const pendingToday = countPendingToday(reminders, today);
   const completedToday = countCompletedToday(reminders, today);
-  const firstName = userName.split(" ")[0] || userName;
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-0.5">
-        <p className="text-sm text-muted-foreground">{greetingForHour()} 👋</p>
-        <h1 className="font-heading text-xl font-bold tracking-tight">{firstName || "bạn"}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-0.5 min-w-0">
+          <p className="text-sm text-muted-foreground">{greetingForHour()} 👋</p>
+          <h1 className="font-heading text-xl font-bold tracking-tight truncate">{userName || "bạn"}</h1>
+        </div>
+        <UserMenu name={userName || "?"} email={userEmail} avatarSize="lg" />
       </div>
 
       <SmartInput />

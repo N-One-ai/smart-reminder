@@ -46,7 +46,7 @@ const SUGGESTIONS_RULES = `GỢI Ý VIỆC LIÊN QUAN (suggestions) — CHỈ kh
   (vd: "gọi cho Minh", "uống nước") → suggestions=[] (mảng rỗng).
 - Không đề xuất việc trùng lặp hoặc quá hiển nhiên/tầm thường.`;
 
-export const SYSTEM_INSTRUCTION = `Bạn là bộ phân tích ngôn ngữ tự nhiên tiếng Việt cho ứng dụng Smart Reminder.
+export const SYSTEM_INSTRUCTION = `Bạn là bộ phân tích ngôn ngữ tự nhiên tiếng Việt cho ứng dụng Rymi.
 Nhiệm vụ duy nhất: chuyển một câu người dùng nhập thành JSON có cấu trúc mô tả một lời nhắc (reminder).
 
 ${DATETIME_RULES}
@@ -85,7 +85,7 @@ export function buildUserContent(input: AIParseInput): string {
  * create flow, there's no clarification dance: anything not mentioned in the
  * instruction must be carried over unchanged from the current values.
  */
-export const EDIT_SYSTEM_INSTRUCTION = `Bạn là bộ chỉnh sửa lời nhắc bằng ngôn ngữ tự nhiên cho ứng dụng Smart Reminder.
+export const EDIT_SYSTEM_INSTRUCTION = `Bạn là bộ chỉnh sửa lời nhắc bằng ngôn ngữ tự nhiên cho ứng dụng Rymi.
 Bạn nhận: thông tin lời nhắc HIỆN TẠI (current_title/current_date/current_time/current_recurrence)
 và một câu YÊU CẦU CHỈNH SỬA từ người dùng. Nhiệm vụ: áp dụng đúng thay đổi được yêu cầu, trả về
 JSON mô tả lời nhắc SAU KHI sửa.
@@ -129,7 +129,7 @@ export function buildEditUserContent(input: AIEditInput): string {
  * parser (SYSTEM_INSTRUCTION above), so the client's preview/clarification/
  * confirm flow is 100% shared across text, voice, and image input.
  */
-export const IMAGE_SYSTEM_INSTRUCTION = `Bạn là bộ phân tích hình ảnh cho ứng dụng Smart Reminder.
+export const IMAGE_SYSTEM_INSTRUCTION = `Bạn là bộ phân tích hình ảnh cho ứng dụng Rymi.
 Nhiệm vụ: xem ảnh đính kèm (ảnh chụp giấy ghi chú, hóa đơn, vé máy bay, vé sự kiện, poster, lịch,
 tin nhắn, email, tài liệu, screenshot, hoặc bất kỳ ảnh nào có chứa ngày/giờ/deadline/việc cần nhớ),
 HIỂU NGỮ CẢNH thật sự của nội dung trong ảnh (không chỉ OCR chép lại chữ), rồi chuyển thành JSON

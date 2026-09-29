@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { CalendarCheck, CalendarClock, CheckCircle2, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RymiLogo } from "./rymi-logo";
 
 const NAV_ITEMS = [
   { href: "/app", label: "Hôm nay", icon: CalendarCheck },
@@ -52,8 +53,8 @@ export function NavBar() {
 
       {/* Desktop / tablet: side nav — same black chrome, neon active pill */}
       <nav className="hidden sm:flex sm:flex-col sm:w-60 sm:shrink-0 sm:min-h-svh sm:py-6 sm:px-4 sm:gap-1 sm:bg-sidebar">
-        <a href="/app" className="px-3 pb-8 font-heading text-lg font-bold tracking-tight text-white">
-          Smart Reminder
+        <a href="/app" aria-label="Rymi" className="px-3 pb-8 flex items-center text-white">
+          <RymiLogo className="h-6 w-auto" />
         </a>
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;

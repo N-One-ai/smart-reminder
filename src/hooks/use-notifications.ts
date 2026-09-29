@@ -43,7 +43,7 @@ export function useNotifications() {
           if (!isDueForNotification(occ, now)) continue;
 
           firingRef.current.add(key);
-          new Notification("Smart Reminder", {
+          new Notification("Rymi", {
             body: `Đã đến lúc: ${occ.reminder.title}`,
             tag: key,
           });

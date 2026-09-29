@@ -8,7 +8,7 @@ export default function RegisterPage() {
         <div className="flex flex-col gap-1.5 text-center">
           <h1 className="text-xl font-semibold tracking-tight">Tạo tài khoản</h1>
           <p className="text-sm text-muted-foreground">
-            Bắt đầu để Smart Reminder nhớ giúp bạn
+            Bắt đầu để Rymi nhớ giúp bạn
           </p>
         </div>
 

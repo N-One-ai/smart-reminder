@@ -82,7 +82,7 @@ export async function GET(request: Request) {
       const result = await sendPush(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
         {
-          title: "Smart Reminder",
+          title: "Rymi",
           body: `Đã đến lúc: ${occ.reminder.title}`,
           tag: `${occ.reminder.id}-${occ.occurrenceDate}`,
           url: `/app/reminder/${occ.reminder.id}`,

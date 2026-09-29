@@ -2,10 +2,12 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Smart Reminder",
-    short_name: "Smart Reminder",
-    description: "Đừng bắt tôi phải nhớ. Hãy để Smart Reminder nhớ giúp tôi.",
-    start_url: "/app",
+    name: "Rymi",
+    short_name: "Rymi",
+    description: "Đừng bắt tôi phải nhớ. Hãy để Rymi nhớ giúp tôi.",
+    // "/" is now the Splash Screen (auth-check + redirect), not a marketing
+    // page — every launch (PWA or browser) goes through it first.
+    start_url: "/",
     scope: "/",
     display: "standalone",
     orientation: "portrait",

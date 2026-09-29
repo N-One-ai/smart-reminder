@@ -13,13 +13,13 @@ const geologica = Geologica({
 });
 
 export const metadata: Metadata = {
-  title: "Smart Reminder",
-  description: "Đừng bắt tôi phải nhớ. Hãy để Smart Reminder nhớ giúp tôi.",
+  title: "Rymi",
+  description: "Đừng bắt tôi phải nhớ. Hãy để Rymi nhớ giúp tôi.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Smart Reminder",
+    title: "Rymi",
   },
   icons: {
     icon: [{ url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" }],

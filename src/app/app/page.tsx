@@ -16,6 +16,7 @@ export default async function TodayPage() {
       reminders={reminders}
       userName={user?.name || user?.email || ""}
       userEmail={user?.email ?? ""}
+      userAvatarUrl={user?.avatarUrl ?? null}
     />
   );
 }

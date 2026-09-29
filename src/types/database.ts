@@ -11,6 +11,7 @@ export interface Database {
           name: string | null;
           email: string;
           timezone: string;
+          avatar_url: string | null;
           created_at: string;
         };
         Insert: {
@@ -18,6 +19,7 @@ export interface Database {
           name?: string | null;
           email: string;
           timezone?: string;
+          avatar_url?: string | null;
           created_at?: string;
         };
         Update: {
@@ -25,6 +27,7 @@ export interface Database {
           name?: string | null;
           email?: string;
           timezone?: string;
+          avatar_url?: string | null;
           created_at?: string;
         };
         Relationships: [];

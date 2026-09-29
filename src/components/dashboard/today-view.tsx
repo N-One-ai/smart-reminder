@@ -14,10 +14,12 @@ export function TodayView({
   reminders,
   userName,
   userEmail,
+  userAvatarUrl,
 }: {
   reminders: Reminder[];
   userName: string;
   userEmail: string;
+  userAvatarUrl: string | null;
 }) {
   const today = todayKey();
 
@@ -33,13 +35,13 @@ export function TodayView({
   const completedToday = countCompletedToday(reminders, today);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pt-5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col gap-0.5 min-w-0">
           <p className="text-sm text-muted-foreground">{greetingForHour()} 👋</p>
           <h1 className="font-heading text-xl font-bold tracking-tight truncate">{userName || "bạn"}</h1>
         </div>
-        <UserMenu name={userName || "?"} email={userEmail} avatarSize="lg" />
+        <UserMenu name={userName || "?"} email={userEmail} avatarUrl={userAvatarUrl} avatarSize="lg" />
       </div>
 
       <SmartInput />

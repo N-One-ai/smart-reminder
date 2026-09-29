@@ -9,13 +9,21 @@ import { UserMenu } from "./user-menu";
  * where the avatar sits inline with "Chào buổi tối / Tên" rather than in a
  * separate top bar. Every other page keeps the avatar here as usual.
  */
-export function AppHeader({ name, email }: { name: string; email: string }) {
+export function AppHeader({
+  name,
+  email,
+  avatarUrl,
+}: {
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+}) {
   const pathname = usePathname();
   if (pathname === "/app") return null;
 
   return (
     <header className="flex items-center justify-end gap-3 px-4 py-3 sm:px-8">
-      <UserMenu name={name} email={email} />
+      <UserMenu name={name} email={email} avatarUrl={avatarUrl} />
     </header>
   );
 }

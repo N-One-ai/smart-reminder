@@ -1,4 +1,5 @@
 import { SettingsForm } from "@/components/settings/settings-form";
+import { AvatarUpload } from "@/components/settings/avatar-upload";
 import { getCurrentUser } from "@/lib/reminder/queries";
 import { SignOutButton } from "@/components/settings/sign-out-button";
 import { PushNotificationSettings } from "@/components/settings/push-notification-settings";
@@ -10,6 +11,14 @@ export default async function SettingsPage() {
   return (
     <div className="flex flex-col gap-6 max-w-md">
       <h1 className="font-heading text-xl font-bold tracking-tight">Cài đặt</h1>
+
+      {user && (
+        <AvatarUpload
+          userId={user.id}
+          name={user.name || user.email}
+          initialAvatarUrl={user.avatarUrl}
+        />
+      )}
 
       <SettingsForm
         initialName={user?.name ?? ""}

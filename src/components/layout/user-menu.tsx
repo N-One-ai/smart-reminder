@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { LogOut, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,10 +20,12 @@ import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
 export function UserMenu({
   name,
   email,
+  avatarUrl = null,
   avatarSize = "default",
 }: {
   name: string;
   email: string;
+  avatarUrl?: string | null;
   avatarSize?: "default" | "lg";
 }) {
   const router = useRouter();
@@ -50,6 +52,7 @@ export function UserMenu({
           className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Avatar size={avatarSize}>
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
             <AvatarFallback className="font-medium">{initial}</AvatarFallback>
           </Avatar>
         </button>

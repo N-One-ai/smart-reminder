@@ -49,7 +49,7 @@ export function NotificationPermissionBanner() {
 
   return (
     <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3">
-      <Bell className="size-4 text-primary shrink-0" />
+      <Bell className="size-4 text-accent-foreground shrink-0" />
       <p className="flex-1 text-sm">
         Bật thông báo để Smart Reminder nhắc bạn đúng giờ khi app đang mở.
       </p>

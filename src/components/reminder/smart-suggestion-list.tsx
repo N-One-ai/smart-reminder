@@ -82,7 +82,7 @@ export function SmartSuggestionList({
   return (
     <div className="rounded-xl border bg-card p-4 flex flex-col gap-3 animate-in fade-in slide-in-from-top-1">
       <div className="flex items-center gap-2">
-        <Sparkles className="size-4 text-primary" />
+        <Sparkles className="size-4 text-accent-foreground" />
         <p className="text-sm font-medium">Có thể bạn muốn nhớ thêm:</p>
       </div>
 
@@ -100,7 +100,7 @@ export function SmartSuggestionList({
             <span className={added.has(i) ? "text-muted-foreground line-through" : ""}>
               {title}
             </span>
-            {added.has(i) && <Check className="size-3.5 text-primary" />}
+            {added.has(i) && <Check className="size-3.5 text-accent-foreground" />}
           </label>
         ))}
       </div>

@@ -12,9 +12,14 @@ import { useEffect, useRef, useState } from "react";
 export function useSpeechRecognition({
   onResult,
   onError,
+  onInterim,
 }: {
   onResult: (transcript: string) => void;
   onError: (message: string) => void;
+  /** Live, not-yet-final transcript — only fires when the caller wants a
+   * word-by-word preview (e.g. the dedicated voice screen); omit to only
+   * ever get the finished transcript via onResult. */
+  onInterim?: (transcript: string) => void;
 }) {
   const [isSupported, setIsSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -39,12 +44,20 @@ export function useSpeechRecognition({
     const recognition = new Ctor();
     recognition.lang = "vi-VN";
     recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.interimResults = !!onInterim;
     recognition.maxAlternatives = 1;
 
     recognition.onresult = (e) => {
-      const transcript = e.results[0]?.[0]?.transcript;
-      if (transcript) onResult(transcript);
+      let finalText = "";
+      let interimText = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const result = e.results[i];
+        const transcript = result[0]?.transcript ?? "";
+        if (result.isFinal) finalText += transcript;
+        else interimText += transcript;
+      }
+      if (finalText) onResult(finalText);
+      else if (interimText) onInterim?.(interimText);
     };
 
     recognition.onerror = (e) => {

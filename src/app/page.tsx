@@ -27,7 +27,7 @@ export default function LandingPage() {
 
           <div className="w-full rounded-xl border bg-card px-4 py-3.5 text-left flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
+              <div className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0">
                 <Bell className="size-4" />
               </div>
               <div>

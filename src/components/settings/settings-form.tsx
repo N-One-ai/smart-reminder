@@ -113,7 +113,7 @@ export function SettingsForm({
           <button
             type="button"
             onClick={() => setTimezone(detected)}
-            className="text-xs text-primary hover:underline self-start"
+            className="text-xs text-accent-foreground hover:underline self-start"
           >
             Trình duyệt phát hiện {detected} — dùng múi giờ này?
           </button>

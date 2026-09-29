@@ -1,64 +1,136 @@
-import { Zap } from "lucide-react";
+"use client";
 
-const SIZE = 76;
-const STROKE = 8;
-const RADIUS = (SIZE - STROKE) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+import { useEffect, useState } from "react";
+import { Check, Flame, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { WeeklyProgress } from "@/lib/reminder/stats";
+
+/**
+ * Deliberately no "you're failing" copy (see prd discussion) — every bracket
+ * reads as encouragement, even 0/7. Pure function so the mapping is easy to
+ * audit/extend without touching render logic.
+ */
+function getProgressCopy(
+  completedDays: number,
+  totalDays: number
+): { headline: string; footer: string } {
+  const remaining = totalDays - completedDays;
+
+  if (completedDays <= 0) {
+    return { headline: "Chưa bắt đầu tuần này", footer: "Bắt đầu ngay hôm nay nhé" };
+  }
+  if (remaining <= 0) {
+    return { headline: "Hoàn thành mục tiêu tuần 🎉", footer: "Bạn đã duy trì trọn vẹn cả tuần" };
+  }
+
+  const footer = `Còn ${remaining} ngày để đạt mục tiêu`;
+  if (completedDays <= 2) return { headline: "Bạn đã bắt đầu rồi", footer };
+  if (completedDays <= 4) return { headline: "Bạn đang duy trì tốt", footer };
+  return { headline: "Gần đạt mục tiêu rồi", footer };
+}
 
 export function WeeklyProgressCard({
-  completedDays,
-  totalDays,
+  progress,
+  onClick,
 }: {
-  completedDays: number;
-  totalDays: number;
+  progress: WeeklyProgress;
+  onClick?: () => void;
 }) {
-  const ratio = totalDays > 0 ? completedDays / totalDays : 0;
-  const offset = CIRCUMFERENCE * (1 - ratio);
+  const { completedDays, totalDays, days } = progress;
+  const percent = totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
+  const isComplete = totalDays > 0 && completedDays >= totalDays;
+  const { headline, footer } = getProgressCopy(completedDays, totalDays);
+
+  // Animate the bar from 0 on mount instead of snapping straight to its
+  // value — a one-time rAF flip after first paint is enough, no need for a
+  // heavier animation library for a single width transition.
+  const [barWidth, setBarWidth] = useState(0);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setBarWidth(percent));
+    return () => cancelAnimationFrame(id);
+  }, [percent]);
 
   return (
-    <div className="rounded-3xl bg-primary p-5 flex items-center justify-between gap-4">
-      <div className="flex flex-col gap-3 min-w-0">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-primary-foreground/80">
-          <Zap className="size-3.5 fill-current" />
-          Duy trì thói quen
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full max-w-full min-w-0 text-left rounded-3xl bg-foreground p-5 flex flex-col gap-4 overflow-hidden box-border transition-[filter,transform] active:scale-[0.99] hover:brightness-110"
+    >
+      <div className="flex items-center justify-between gap-3 min-w-0">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-background/70 min-w-0">
+          <Zap className="size-3.5 fill-current text-primary shrink-0" />
+          <span className="truncate">Duy trì thói quen</span>
         </div>
-        <p className="font-heading text-lg font-bold text-primary-foreground leading-snug text-balance">
-          Tiến độ tuần này
+        <span className="text-xs font-medium text-background/50 shrink-0">Tuần này</span>
+      </div>
+
+      <div className="flex flex-col gap-1 min-w-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+        <p className="font-heading text-2xl font-bold text-background leading-none min-w-0">
+          {completedDays}
+          <span className="text-background/50 text-base font-medium">/{totalDays} ngày</span>
+        </p>
+        <p
+          className={cn(
+            "text-sm font-medium text-balance min-w-0",
+            isComplete ? "text-primary" : "text-background/70"
+          )}
+        >
+          {headline}
         </p>
       </div>
 
-      <div className="relative shrink-0" style={{ width: SIZE, height: SIZE }}>
-        <svg width={SIZE} height={SIZE} className="-rotate-90">
-          <circle
-            cx={SIZE / 2}
-            cy={SIZE / 2}
-            r={RADIUS}
-            fill="none"
-            stroke="color-mix(in oklch, var(--primary-foreground) 25%, transparent)"
-            strokeWidth={STROKE}
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="h-1.5 flex-1 min-w-0 rounded-full bg-background/15 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out"
+            style={{ width: `${barWidth}%` }}
           />
-          <circle
-            cx={SIZE / 2}
-            cy={SIZE / 2}
-            r={RADIUS}
-            fill="none"
-            stroke="var(--primary-foreground)"
-            strokeWidth={STROKE}
-            strokeLinecap="round"
-            strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={offset}
-            className="transition-[stroke-dashoffset] duration-500"
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-heading text-lg font-bold text-primary-foreground leading-none">
-            {completedDays}
-          </span>
-          <span className="text-[10px] text-primary-foreground/70 leading-none mt-0.5">
-            /{totalDays} ngày
-          </span>
         </div>
+        <span className="text-xs font-medium text-background/50 tabular-nums w-9 text-right shrink-0">
+          {percent}%
+        </span>
       </div>
-    </div>
+
+      <div className="flex items-center justify-between gap-1 min-w-0">
+        {days.map((day, i) => (
+          <div
+            key={day.dateKey}
+            className="flex flex-col items-center gap-1.5 flex-1 min-w-0 animate-in fade-in slide-in-from-bottom-1 duration-300 fill-mode-both"
+            style={{ animationDelay: `${i * 40}ms` }}
+          >
+            <div
+              className={cn(
+                "flex items-center justify-center size-7 rounded-full border transition-colors",
+                day.isCompleted
+                  ? "bg-primary border-primary text-primary-foreground"
+                  : day.isFuture
+                    ? "border-background/10"
+                    : "border-background/20",
+                day.isToday && !day.isCompleted && "ring-2 ring-primary/50"
+              )}
+            >
+              {day.isCompleted && <Check className="size-3.5" strokeWidth={3} />}
+            </div>
+            <span
+              className={cn(
+                "text-[10px]",
+                day.isToday
+                  ? "text-background font-semibold"
+                  : day.isFuture
+                    ? "text-background/35"
+                    : "text-background/55"
+              )}
+            >
+              {day.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-1.5 text-xs text-background/60 pt-3 border-t border-background/10 min-w-0">
+        <Flame className="size-3.5 text-primary shrink-0" />
+        <span className="min-w-0 text-balance">{footer}</span>
+      </div>
+    </button>
   );
 }

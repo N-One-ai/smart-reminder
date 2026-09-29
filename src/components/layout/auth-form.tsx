@@ -59,7 +59,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   if (needsConfirmation) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-xl border bg-card p-6 text-center">
-        <MailCheck className="size-8 text-primary" />
+        <MailCheck className="size-8 text-accent-foreground" />
         <p className="text-sm font-medium">Kiểm tra email của bạn</p>
         <p className="text-xs text-muted-foreground">
           Chúng tôi đã gửi một liên kết xác nhận tới {email}. Xác nhận để hoàn tất đăng ký.

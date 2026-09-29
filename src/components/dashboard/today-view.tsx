@@ -32,7 +32,7 @@ export function TodayView({ reminders, userName }: { reminders: Reminder[]; user
         <h1 className="font-heading text-xl font-bold tracking-tight">{firstName || "bạn"}</h1>
       </div>
 
-      <WeeklyProgressCard completedDays={weekly.completedDays} totalDays={weekly.totalDays} />
+      <WeeklyProgressCard progress={weekly} />
 
       <div className="grid grid-cols-2 gap-3">
         <StatCard icon={ListTodo} label="Còn lại" value={pendingToday} unit="việc" />

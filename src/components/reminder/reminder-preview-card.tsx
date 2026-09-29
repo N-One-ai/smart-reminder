@@ -26,7 +26,7 @@ export function ReminderPreviewCard({
   return (
     <div className="rounded-xl border bg-card p-4 flex flex-col gap-3 animate-in fade-in slide-in-from-top-1">
       <div className="flex items-start gap-3">
-        <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
+        <div className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0">
           <Bell className="size-4" />
         </div>
         <div className="flex flex-col gap-1 min-w-0">

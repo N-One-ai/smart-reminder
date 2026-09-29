@@ -23,8 +23,8 @@ export function NavBar() {
   // "instant" SPA transitions for guaranteed data correctness here.
   return (
     <>
-      {/* Mobile: floating bottom tab bar */}
-      <nav className="sm:hidden fixed bottom-3 inset-x-3 z-40 rounded-3xl bg-card shadow-lg shadow-black/5 px-2 py-2">
+      {/* Mobile: floating bottom tab bar — black chrome, neon active pill (2-tone identity) */}
+      <nav className="sm:hidden fixed bottom-3 inset-x-3 z-40 rounded-3xl bg-sidebar shadow-lg shadow-black/20 px-2 py-2">
         <ul className="grid grid-cols-4">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
@@ -38,7 +38,7 @@ export function NavBar() {
                   <span
                     className={cn(
                       "flex items-center justify-center size-9 rounded-2xl transition-colors",
-                      active ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                      active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground"
                     )}
                   >
                     <Icon className="size-[18px]" strokeWidth={active ? 2.5 : 2} />
@@ -46,7 +46,7 @@ export function NavBar() {
                   <span
                     className={cn(
                       "text-[10px] font-medium",
-                      active ? "text-foreground" : "text-muted-foreground"
+                      active ? "text-sidebar-primary-foreground" : "text-sidebar-foreground"
                     )}
                   >
                     {label}
@@ -58,9 +58,9 @@ export function NavBar() {
         </ul>
       </nav>
 
-      {/* Desktop / tablet: side nav */}
-      <nav className="hidden sm:flex sm:flex-col sm:w-60 sm:shrink-0 sm:min-h-svh sm:py-6 sm:px-4 sm:gap-1 sm:bg-card">
-        <a href="/app" className="px-3 pb-8 font-heading text-lg font-bold tracking-tight">
+      {/* Desktop / tablet: side nav — same black chrome, neon active pill */}
+      <nav className="hidden sm:flex sm:flex-col sm:w-60 sm:shrink-0 sm:min-h-svh sm:py-6 sm:px-4 sm:gap-1 sm:bg-sidebar">
+        <a href="/app" className="px-3 pb-8 font-heading text-lg font-bold tracking-tight text-white">
           Smart Reminder
         </a>
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
@@ -73,8 +73,8 @@ export function NavBar() {
               className={cn(
                 "flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               )}
             >
               <Icon className="size-4.5" strokeWidth={active ? 2.5 : 2} />

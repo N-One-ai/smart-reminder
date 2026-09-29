@@ -1,21 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Baloo_2, Nunito } from "next/font/google";
+import { Geologica } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegister } from "@/components/layout/service-worker-register";
 import "./globals.css";
 
-// Rounded, friendly pairing to match the app's green/consumer-fitness-app
-// visual direction: Baloo 2 (bold, chunky terminals) for headings and big
-// stat numbers, Nunito (rounded but legible at body sizes) for everything
-// else. Both are Google Fonts (OFL) with full Vietnamese diacritic support.
-const balooDisplay = Baloo_2({
-  variable: "--font-baloo",
-  subsets: ["latin", "vietnamese"],
-  weight: ["600", "700", "800"],
-});
-
-const nunitoSans = Nunito({
-  variable: "--font-nunito",
+// Single variable font for both headings and body — Geologica (Google
+// Fonts, OFL) covers the full weight range (100–900) with full Vietnamese
+// diacritic support, so --font-heading and --font-sans both point at it.
+const geologica = Geologica({
+  variable: "--font-geologica",
   subsets: ["latin", "vietnamese"],
 });
 
@@ -35,14 +28,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#00a33d",
+  themeColor: "#292b1f",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="vi"
-      className={`${balooDisplay.variable} ${nunitoSans.variable} h-full antialiased`}
+      className={`${geologica.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Mic, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -11,11 +11,11 @@ import { ReminderPreviewCard } from "./reminder-preview-card";
 import { ClarificationPrompt } from "./clarification-prompt";
 import { ReminderEditForm, type ReminderEditValues } from "./reminder-edit-form";
 import { SmartSuggestionList } from "./smart-suggestion-list";
+import { VoiceInputScreen } from "./voice-input-screen";
 import { parseReminderText } from "@/lib/ai/actions";
 import { createReminder } from "@/lib/reminder/actions";
 import { buildAIContext } from "@/lib/utils/date";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
-import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 
 type Mode = "idle" | "parsing" | "clarifying" | "preview" | "editing" | "suggesting";
 
@@ -38,11 +38,14 @@ export function SmartInput() {
   // unmounted "saving" state let users navigate away with zero feedback that
   // a save was still in flight.
   const [isSaving, setIsSaving] = useState(false);
+  const [micSupported, setMicSupported] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
 
-  const { isSupported: micSupported, isListening, start: startListening } = useSpeechRecognition({
-    onResult: (transcript) => setInputText(transcript),
-    onError: (message) => toast.error(message),
-  });
+  useEffect(() => {
+    const Ctor = window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing with browser-only SpeechRecognition API, see use-speech-recognition.ts
+    setMicSupported(!!Ctor);
+  }, []);
 
   async function runParse(text: string) {
     setMode("parsing");
@@ -163,7 +166,7 @@ export function SmartInput() {
           <Textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder={isListening ? "Đang nghe..." : "Bạn cần nhớ điều gì?"}
+            placeholder="Bạn cần nhớ điều gì?"
             rows={2}
             maxLength={500}
             className={micSupported ? "resize-none text-base pr-20" : "resize-none text-base pr-12"}
@@ -179,13 +182,13 @@ export function SmartInput() {
             <Button
               type="button"
               size="icon"
-              variant={isListening ? "default" : "outline"}
+              variant="outline"
               disabled={mode === "parsing"}
-              onClick={startListening}
+              onClick={() => setVoiceOpen(true)}
               className="absolute right-12 bottom-2"
-              aria-label={isListening ? "Đang nghe" : "Nói để nhập"}
+              aria-label="Nói để nhập"
             >
-              <Mic className={`size-4 ${isListening ? "animate-pulse" : ""}`} />
+              <Mic className="size-4" />
             </Button>
           )}
           <Button
@@ -202,6 +205,16 @@ export function SmartInput() {
             )}
           </Button>
         </form>
+      )}
+
+      {voiceOpen && (
+        <VoiceInputScreen
+          onDone={(text) => {
+            setInputText(text);
+            setVoiceOpen(false);
+          }}
+          onCancel={() => setVoiceOpen(false)}
+        />
       )}
 
       {mode === "clarifying" && result?.clarification_question && (

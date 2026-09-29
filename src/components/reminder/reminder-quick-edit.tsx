@@ -60,7 +60,7 @@ function DiffField({
         {changed ? (
           <span className="flex items-center gap-1.5 flex-wrap">
             <span className="text-muted-foreground line-through">{before}</span>
-            <span className="font-medium text-primary">{after}</span>
+            <span className="font-medium text-accent-foreground">{after}</span>
           </span>
         ) : (
           <span>{after}</span>

@@ -56,7 +56,7 @@ export function ReminderListItem({ occurrence }: { occurrence: ReminderOccurrenc
   return (
     <div
       className={cn(
-        "group flex items-center gap-3 rounded-2xl bg-card shadow-xs px-4 py-3.5 transition-opacity",
+        "group flex items-center gap-3 rounded-2xl border border-border px-4 py-4 transition-opacity",
         (isCompleted || isPending) && "opacity-60"
       )}
     >
@@ -68,20 +68,24 @@ export function ReminderListItem({ occurrence }: { occurrence: ReminderOccurrenc
         aria-label={`Đánh dấu hoàn thành: ${reminder.title}`}
       />
 
-      <Link href={`/app/reminder/${reminder.id}`} className="flex-1 min-w-0 flex items-center gap-3">
-        <span className="text-xs font-medium text-accent-foreground bg-accent rounded-full px-2 py-1 shrink-0 tabular-nums">
+      {/* Time leads (priority 1), title follows (priority 2) — weight/size does
+          the hierarchy work instead of a colored badge, per "tối giản, ít
+          background" — status (priority 3) is the checkbox/strikethrough
+          above, recurrence (priority 4) is the smallest, last element. */}
+      <Link href={`/app/reminder/${reminder.id}`} className="flex-1 min-w-0 flex items-center gap-3.5">
+        <span className="text-sm font-bold tabular-nums text-foreground shrink-0 w-11">
           {reminder.time}
         </span>
         <span
           className={cn(
-            "text-sm font-medium truncate",
+            "flex-1 min-w-0 text-sm font-medium truncate",
             isCompleted && "line-through text-muted-foreground"
           )}
         >
           {reminder.title}
         </span>
         {reminder.repeat_rule && (
-          <Repeat className="size-3.5 text-muted-foreground shrink-0" />
+          <Repeat className="size-3.5 text-muted-foreground/70 shrink-0" />
         )}
       </Link>
 

@@ -1,4 +1,4 @@
-import type { AIParseInput, AIEditInput } from "@/types/ai";
+import type { AIParseInput, AIEditInput, AIImageParseInput } from "@/types/ai";
 
 /**
  * Shared by both the create-reminder prompt and the natural-language-edit
@@ -35,6 +35,17 @@ QUY TẮC LẶP LẠI (recurrence):
 - "mỗi tháng"/"hàng tháng" → frequency=monthly, interval=1, day_of_month=<ngày trong tháng>
 - "mỗi năm"/"hàng năm" → frequency=yearly, interval=1`;
 
+/** Shared by both the text-input and image-scan prompts — identical suggestion policy either way. */
+const SUGGESTIONS_RULES = `GỢI Ý VIỆC LIÊN QUAN (suggestions) — CHỈ khi intent="create_reminder":
+- Nếu nội dung mô tả một SỰ KIỆN có nhiều việc chuẩn bị/liên quan hiển nhiên đi kèm
+  (vd: chuyến bay, cuộc hẹn khám bệnh, phỏng vấn, đám cưới, chuyển nhà, thi cử, hóa đơn cần thanh toán...),
+  hãy đề xuất 2-5 việc phụ thường đi kèm trong mảng "suggestions" (mỗi phần tử là
+  một title ngắn gọn, tiếng Việt, bắt đầu bằng động từ — vd "Check-in online",
+  "Chuẩn bị hành lý", "Kiểm tra giấy tờ").
+- Nếu là một việc đơn giản, thường nhật, không có việc phụ hiển nhiên
+  (vd: "gọi cho Minh", "uống nước") → suggestions=[] (mảng rỗng).
+- Không đề xuất việc trùng lặp hoặc quá hiển nhiên/tầm thường.`;
+
 export const SYSTEM_INSTRUCTION = `Bạn là bộ phân tích ngôn ngữ tự nhiên tiếng Việt cho ứng dụng Smart Reminder.
 Nhiệm vụ duy nhất: chuyển một câu người dùng nhập thành JSON có cấu trúc mô tả một lời nhắc (reminder).
 
@@ -52,15 +63,7 @@ QUY TẮC QUAN TRỌNG NHẤT — KHÔNG BAO GIỜ ĐOÁN:
 Luôn trả timezone đúng bằng giá trị timezone được cung cấp trong ngữ cảnh.
 Trả confidence từ 0 đến 1 phản ánh mức độ chắc chắn của việc phân tích.
 
-GỢI Ý VIỆC LIÊN QUAN (suggestions) — CHỈ khi intent="create_reminder":
-- Nếu câu mô tả một SỰ KIỆN có nhiều việc chuẩn bị/liên quan hiển nhiên đi kèm
-  (vd: chuyến bay, cuộc hẹn khám bệnh, phỏng vấn, đám cưới, chuyển nhà, thi cử...),
-  hãy đề xuất 2-5 việc phụ thường đi kèm trong mảng "suggestions" (mỗi phần tử là
-  một title ngắn gọn, tiếng Việt, bắt đầu bằng động từ — vd "Check-in online",
-  "Chuẩn bị hành lý", "Kiểm tra giấy tờ").
-- Nếu câu là một việc đơn giản, thường nhật, không có việc phụ hiển nhiên
-  (vd: "gọi cho Minh", "uống nước") → suggestions=[] (mảng rỗng).
-- Không đề xuất việc trùng lặp hoặc quá hiển nhiên/tầm thường.
+${SUGGESTIONS_RULES}
 
 Chỉ trả JSON đúng theo schema đã cho, không thêm text giải thích nào khác.`;
 
@@ -119,4 +122,62 @@ export function buildEditUserContent(input: AIEditInput): string {
     ``,
     `Câu yêu cầu chỉnh sửa: "${input.editText}"`,
   ].join("\n");
+}
+
+/**
+ * Scan ảnh (V2) — image → Gemini Vision → same output contract as the text
+ * parser (SYSTEM_INSTRUCTION above), so the client's preview/clarification/
+ * confirm flow is 100% shared across text, voice, and image input.
+ */
+export const IMAGE_SYSTEM_INSTRUCTION = `Bạn là bộ phân tích hình ảnh cho ứng dụng Smart Reminder.
+Nhiệm vụ: xem ảnh đính kèm (ảnh chụp giấy ghi chú, hóa đơn, vé máy bay, vé sự kiện, poster, lịch,
+tin nhắn, email, tài liệu, screenshot, hoặc bất kỳ ảnh nào có chứa ngày/giờ/deadline/việc cần nhớ),
+HIỂU NGỮ CẢNH thật sự của nội dung trong ảnh (không chỉ OCR chép lại chữ), rồi chuyển thành JSON
+có cấu trúc mô tả một lời nhắc (reminder) — đúng theo schema và quy tắc như khi phân tích một câu văn bản.
+
+${DATETIME_RULES}
+
+QUY TẮC QUAN TRỌNG NHẤT — KHÔNG BAO GIỜ ĐOÁN:
+- Nếu ảnh không có việc/nội dung cần nhớ rõ ràng → intent="needs_clarification", missing_field="title",
+  clarification_question="Mình chưa tìm thấy thông tin cần nhắc trong ảnh, bạn có thể mô tả thêm không?".
+- Nếu ảnh có việc cần làm nhưng KHÔNG xác định được ngày/giờ cụ thể (kể cả tương đối) →
+  intent="needs_clarification", missing_field="datetime", clarification_question hỏi cụ thể ngày/giờ nào
+  (vd: "Bạn muốn đặt lời nhắc vào Thứ Sáu, 02/10 lúc mấy giờ?" — nêu rõ ngày mình suy luận được nếu có).
+- Nếu ảnh có NHIỀU ngày/giờ hoặc nhiều mốc thời gian khác nhau và không rõ mốc nào là chính →
+  intent="needs_clarification", missing_field="datetime", clarification_question liệt kê ngắn gọn các lựa
+  chọn để người dùng xác nhận mốc nào đúng.
+- CHỈ khi có đủ CẢ title lẫn date+time rõ ràng, không mơ hồ mới trả intent="create_reminder".
+- Không tự chọn một giờ ngẫu nhiên khi ảnh không cho biết thời gian.
+- Nếu ảnh mờ, không đọc được chữ, hoặc hoàn toàn không liên quan đến việc cần nhớ → vẫn trả về
+  needs_clarification với clarification_question="Mình chưa đọc rõ nội dung trong ảnh, bạn có thể chụp
+  lại rõ hơn hoặc mô tả thêm không?" — KHÔNG được bịa ra một reminder không có căn cứ trong ảnh.
+
+Nếu ảnh có thông tin phụ hữu ích không thuộc title/date/time (vd: số tiền hóa đơn, địa điểm, mã vé),
+hãy đưa vào "description" ngắn gọn.
+
+Luôn trả timezone đúng bằng giá trị timezone được cung cấp trong ngữ cảnh.
+Trả confidence từ 0 đến 1 phản ánh mức độ chắc chắn — hạ thấp confidence khi ảnh khó đọc hoặc phải suy luận nhiều.
+
+${SUGGESTIONS_RULES}
+
+Chỉ trả JSON đúng theo schema đã cho, không thêm text giải thích nào khác.`;
+
+export function buildImageUserContent(input: AIImageParseInput): string {
+  const lines = [
+    `Ngữ cảnh hiện tại:`,
+    `- current_date: ${input.currentDate}`,
+    `- current_time: ${input.currentTime}`,
+    `- timezone: ${input.timezone}`,
+    `- day_of_week: ${input.dayOfWeek}`,
+  ];
+  if (input.additionalContext?.trim()) {
+    lines.push(
+      ``,
+      `Đây là lượt phân tích lại CÙNG một ảnh sau khi đã hỏi thêm người dùng — dưới đây là các câu hỏi/`,
+      `trả lời bổ sung, kết hợp với nội dung ảnh để đưa ra kết quả chính xác hơn:`,
+      `"${input.additionalContext.trim()}"`
+    );
+  }
+  lines.push(``, `Hãy phân tích ảnh đính kèm theo ngữ cảnh trên.`);
+  return lines.join("\n");
 }

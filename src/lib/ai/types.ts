@@ -1,4 +1,4 @@
-import type { AIParseInput, AIEditInput } from "@/types/ai";
+import type { AIParseInput, AIEditInput, AIImageParseInput } from "@/types/ai";
 
 /**
  * Any AI provider adapter must implement this. Swapping Gemini for OpenAI or
@@ -10,4 +10,6 @@ export interface AIProvider {
   parseReminder(input: AIParseInput): Promise<unknown>;
   /** Natural-language editing (V2) — applies an edit instruction to an existing reminder. */
   parseEdit(input: AIEditInput): Promise<unknown>;
+  /** Scan ảnh (V2) — image understanding, same output shape as parseReminder. */
+  parseImage(input: AIImageParseInput): Promise<unknown>;
 }

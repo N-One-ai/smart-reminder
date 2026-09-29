@@ -1,9 +1,8 @@
-import { CalendarCheck, CheckCircle2, ListTodo } from "lucide-react";
+import { CalendarCheck } from "lucide-react";
 import { SmartInput } from "@/components/reminder/smart-input";
 import { ReminderListItem } from "@/components/reminder/reminder-list-item";
 import { EmptyState } from "@/components/reminder/empty-state";
 import { WeeklyProgressCard } from "./weekly-progress-card";
-import { StatCard } from "./stat-card";
 import { DayGroupHeader } from "./day-group-header";
 import { expandAllOccurrences } from "@/lib/reminder/recurrence";
 import { computeWeeklyProgress, countPendingToday, countCompletedToday } from "@/lib/reminder/stats";
@@ -32,17 +31,19 @@ export function TodayView({ reminders, userName }: { reminders: Reminder[]; user
         <h1 className="font-heading text-xl font-bold tracking-tight">{firstName || "bạn"}</h1>
       </div>
 
-      <WeeklyProgressCard progress={weekly} />
-
-      <div className="grid grid-cols-2 gap-3">
-        <StatCard icon={ListTodo} label="Còn lại" value={pendingToday} unit="việc" />
-        <StatCard icon={CheckCircle2} label="Đã xong" value={completedToday} unit="việc" />
-      </div>
-
       <SmartInput />
 
       <div className="flex flex-col gap-3">
-        <DayGroupHeader label="Hôm nay" />
+        <div className="flex items-center justify-between px-1">
+          <DayGroupHeader label="Hôm nay" className="mb-0" />
+          {(pendingToday > 0 || completedToday > 0) && (
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span>{pendingToday} còn lại</span>
+              <span aria-hidden="true">·</span>
+              <span>{completedToday} đã xong</span>
+            </div>
+          )}
+        </div>
         {todayOccurrences.length === 0 ? (
           <EmptyState
             icon={CalendarCheck}
@@ -68,6 +69,8 @@ export function TodayView({ reminders, userName }: { reminders: Reminder[]; user
           </div>
         </div>
       )}
+
+      <WeeklyProgressCard progress={weekly} />
     </div>
   );
 }

@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
     staleTimes: {
       dynamic: 0,
     },
+    // Default is 1MB — the "Scan ảnh" feature (parseReminderImage) sends a
+    // compressed image as base64, which inflates ~33% over its raw byte size.
+    serverActions: {
+      bodySizeLimit: "8mb",
+    },
   },
 };
 

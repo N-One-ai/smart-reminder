@@ -44,3 +44,17 @@ export interface AIEditResult {
   recurrence: RecurrenceRule | null;
   confidence: number;
 }
+
+/** Scan ảnh (V2) — image → Gemini Vision → same AIParseResult shape as text/voice. */
+export interface AIImageParseInput {
+  imageBase64: string; // no "data:...;base64," prefix
+  mimeType: string; // "image/jpeg" | "image/png" | "image/webp"
+  currentDate: string;
+  currentTime: string;
+  timezone: string;
+  dayOfWeek: string;
+  /** Set on a clarification round-trip: the accumulated Q&A text so far,
+   * re-sent alongside the SAME image rather than losing visual context by
+   * falling back to text-only parsing. */
+  additionalContext?: string;
+}

@@ -1,11 +1,13 @@
 import { GoogleGenAI, Type, type Schema } from "@google/genai";
 import type { AIProvider } from "../types";
-import type { AIParseInput, AIEditInput } from "@/types/ai";
+import type { AIParseInput, AIEditInput, AIImageParseInput } from "@/types/ai";
 import {
   SYSTEM_INSTRUCTION,
   buildUserContent,
   EDIT_SYSTEM_INSTRUCTION,
   buildEditUserContent,
+  IMAGE_SYSTEM_INSTRUCTION,
+  buildImageUserContent,
 } from "../prompt";
 
 const MODEL = "gemini-flash-latest";
@@ -105,6 +107,31 @@ export class GeminiProvider implements AIProvider {
         systemInstruction: EDIT_SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",
         responseSchema: EDIT_RESPONSE_SCHEMA,
+        temperature: 0.1,
+      },
+    });
+
+    const text = response.text;
+    if (!text) {
+      throw new Error("Gemini trả về phản hồi rỗng");
+    }
+
+    return JSON.parse(text);
+  }
+
+  async parseImage(input: AIImageParseInput): Promise<unknown> {
+    const response = await this.client.models.generateContent({
+      model: MODEL,
+      contents: [
+        { text: buildImageUserContent(input) },
+        { inlineData: { mimeType: input.mimeType, data: input.imageBase64 } },
+      ],
+      config: {
+        systemInstruction: IMAGE_SYSTEM_INSTRUCTION,
+        responseMimeType: "application/json",
+        // Reuses RESPONSE_SCHEMA — image scan produces the exact same
+        // reminder shape as text/voice, by design (shared preview/confirm flow).
+        responseSchema: RESPONSE_SCHEMA,
         temperature: 0.1,
       },
     });

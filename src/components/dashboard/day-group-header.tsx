@@ -1,6 +1,8 @@
-export function DayGroupHeader({ label }: { label: string }) {
+import { cn } from "@/lib/utils";
+
+export function DayGroupHeader({ label, className }: { label: string; className?: string }) {
   return (
-    <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground px-1 mb-2">
+    <h2 className={cn("text-xs font-semibold uppercase tracking-wide text-muted-foreground px-1 mb-2", className)}>
       {label}
     </h2>
   );

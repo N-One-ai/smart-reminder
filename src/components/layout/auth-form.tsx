@@ -17,9 +17,6 @@ interface AuthFormProps {
 
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
-  // Login-only: inputs/button ~1.5x taller for easier mobile tapping — kept
-  // off the register form so that screen stays exactly as it was.
-  const isLogin = mode === "login";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -74,7 +71,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className={cn("flex flex-col gap-4", isLogin && "gap-5")}>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {mode === "register" && (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="name">Họ và tên</Label>
@@ -84,6 +81,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             onChange={(e) => setName(e.target.value)}
             placeholder="Nguyễn Văn A"
             required
+            className={TALL_INPUT_CLASS}
           />
         </div>
       )}
@@ -97,7 +95,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
           required
-          className={cn(isLogin && TALL_INPUT_CLASS)}
+          className={TALL_INPUT_CLASS}
         />
       </div>
 
@@ -111,7 +109,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           placeholder={mode === "register" ? "Tối thiểu 6 ký tự" : "••••••••"}
           minLength={6}
           required
-          className={cn(isLogin && TALL_INPUT_CLASS)}
+          className={TALL_INPUT_CLASS}
         />
       </div>
 
@@ -119,7 +117,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         <p className="text-xs text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>
       )}
 
-      <Button type="submit" disabled={loading} className={cn("mt-2", isLogin && TALL_PILL_BUTTON_CLASS)}>
+      <Button type="submit" disabled={loading} className={cn("mt-2", TALL_PILL_BUTTON_CLASS)}>
         {loading && <Loader2 className="size-4 animate-spin" />}
         {mode === "login" ? "Đăng nhập" : "Tạo tài khoản"}
       </Button>

@@ -98,19 +98,22 @@ export function WeeklyProgressCard({
             className="flex flex-col items-center gap-1.5 flex-1 min-w-0 animate-in fade-in slide-in-from-bottom-1 duration-300 fill-mode-both"
             style={{ animationDelay: `${i * 40}ms` }}
           >
-            <div
+            <Check
               className={cn(
-                "flex items-center justify-center size-7 rounded-full border transition-colors",
+                "size-5 shrink-0 transition-colors",
                 day.isCompleted
-                  ? "bg-primary border-primary text-primary-foreground"
-                  : day.isFuture
-                    ? "border-background/10"
-                    : "border-background/20",
-                day.isToday && !day.isCompleted && "ring-2 ring-primary/50"
+                  ? "text-primary"
+                  : day.isToday
+                    ? "text-background/55"
+                    : "text-background/20"
               )}
-            >
-              {day.isCompleted && <Check className="size-3.5" strokeWidth={3} />}
-            </div>
+              strokeWidth={2.75}
+              style={
+                day.isCompleted && day.isToday
+                  ? { filter: "drop-shadow(0 0 3px var(--primary))" }
+                  : undefined
+              }
+            />
             <span
               className={cn(
                 "text-[10px]",

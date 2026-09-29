@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth/actions";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
+import { TALL_PILL_BUTTON_CLASS } from "@/lib/ui/form-controls";
+import { cn } from "@/lib/utils";
 
 export function SignOutButton() {
   const router = useRouter();
@@ -25,7 +27,12 @@ export function SignOutButton() {
   }
 
   return (
-    <Button variant="outline" onClick={handleClick} disabled={isPending} className="w-fit">
+    <Button
+      variant="outline"
+      onClick={handleClick}
+      disabled={isPending}
+      className={cn("w-fit px-6", TALL_PILL_BUTTON_CLASS)}
+    >
       {isPending ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}
       Đăng xuất
     </Button>

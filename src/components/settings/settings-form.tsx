@@ -14,6 +14,12 @@ import {
 } from "@/components/ui/select";
 import { updateProfile } from "@/lib/profile/actions";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
+import {
+  TALL_INPUT_CLASS,
+  TALL_SELECT_TRIGGER_CLASS,
+  TALL_PILL_BUTTON_CLASS,
+} from "@/lib/ui/form-controls";
+import { cn } from "@/lib/utils";
 
 const COMMON_TIMEZONES = [
   "Asia/Ho_Chi_Minh",
@@ -84,21 +90,26 @@ export function SettingsForm({
   }
 
   return (
-    <form onSubmit={handleSave} className="rounded-xl border bg-card p-5 flex flex-col gap-4">
+    <form onSubmit={handleSave} className="rounded-xl border bg-card p-5 flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="name">Họ và tên</Label>
-        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className={TALL_INPUT_CLASS}
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" value={email} disabled />
+        <Input id="email" value={email} disabled className={TALL_INPUT_CLASS} />
       </div>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="timezone">Múi giờ</Label>
         <Select value={timezone} onValueChange={setTimezone}>
-          <SelectTrigger id="timezone" className="w-full">
+          <SelectTrigger id="timezone" className={cn("w-full", TALL_SELECT_TRIGGER_CLASS)}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -125,7 +136,7 @@ export function SettingsForm({
         )}
       </div>
 
-      <Button type="submit" disabled={isPending} className="mt-1">
+      <Button type="submit" disabled={isPending} className={cn("mt-1", TALL_PILL_BUTTON_CLASS)}>
         Lưu thay đổi
       </Button>
     </form>

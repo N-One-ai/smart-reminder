@@ -23,34 +23,26 @@ export function NavBar() {
   // "instant" SPA transitions for guaranteed data correctness here.
   return (
     <>
-      {/* Mobile: floating bottom tab bar — black chrome, neon active pill (2-tone identity) */}
+      {/* Mobile: floating bottom tab bar — icon-only, no label/no active shape (2-tone identity via icon color alone) */}
       <nav className="sm:hidden fixed bottom-3 inset-x-3 z-40 rounded-3xl bg-sidebar shadow-lg shadow-black/20 px-2 py-2">
         <ul className="grid grid-cols-4">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
-              <li key={href}>
+              <li key={href} className="flex justify-center">
                 <a
                   href={href}
+                  aria-label={label}
                   aria-current={active ? "page" : undefined}
-                  className="flex flex-col items-center gap-1 py-1"
+                  className="flex items-center justify-center size-11"
                 >
-                  <span
+                  <Icon
                     className={cn(
-                      "flex items-center justify-center size-9 rounded-2xl transition-colors",
-                      active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground"
+                      "size-[21px] transition-colors duration-200",
+                      active ? "text-sidebar-primary" : "text-sidebar-foreground"
                     )}
-                  >
-                    <Icon className="size-[18px]" strokeWidth={active ? 2.5 : 2} />
-                  </span>
-                  <span
-                    className={cn(
-                      "text-[10px] font-medium",
-                      active ? "text-sidebar-primary-foreground" : "text-sidebar-foreground"
-                    )}
-                  >
-                    {label}
-                  </span>
+                    strokeWidth={active ? 2.5 : 2}
+                  />
                 </a>
               </li>
             );

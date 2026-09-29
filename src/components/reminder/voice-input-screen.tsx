@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, Keyboard, Mic, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
@@ -9,8 +9,14 @@ import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
  * Full-screen voice capture, modeled on the reference mock: a large centered
  * mic orb, a live transcript growing underneath it, and a bottom row to
  * switch back to the keyboard, restart/stop listening, or cancel outright.
- * Auto-starts listening on mount — the user already chose voice input by
- * opening this screen, so there's no reason to make them tap twice.
+ *
+ * Deliberately does NOT auto-start listening on mount. Requesting mic access
+ * must happen from a genuine click handler — iOS Safari's SpeechRecognition
+ * can fail immediately with a permission error if start() is ever called
+ * from a useEffect instead of directly inside a tap, since WebKit no longer
+ * considers that "user-activated" by the time the effect runs. This also
+ * means no permission prompt/error is ever shown before the user actually
+ * taps the mic button below.
  */
 export function VoiceInputScreen({
   onDone,
@@ -21,6 +27,7 @@ export function VoiceInputScreen({
 }) {
   const [liveText, setLiveText] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [hasStarted, setHasStarted] = useState(false);
 
   const { isListening, start, stop } = useSpeechRecognition({
     onInterim: (transcript) => {
@@ -33,18 +40,14 @@ export function VoiceInputScreen({
     onError: (message) => setErrorMessage(message),
   });
 
-  useEffect(() => {
-    start();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- start()/stop() are stable closures from the hook; this must run exactly once, on mount
-  }, []);
-
   function handleMicTap() {
     if (isListening) {
       stop();
-    } else {
-      setErrorMessage(null);
-      start();
+      return;
     }
+    setErrorMessage(null);
+    setHasStarted(true);
+    start();
   }
 
   function handleKeyboardTap() {
@@ -99,7 +102,12 @@ export function VoiceInputScreen({
                 liveText ? "text-foreground font-medium" : "text-muted-foreground"
               )}
             >
-              {liveText || (isListening ? "Đang nghe..." : "Nhấn micro bên dưới để nói lại")}
+              {liveText ||
+                (isListening
+                  ? "Đang nghe..."
+                  : hasStarted
+                    ? "Nhấn micro bên dưới để nói lại"
+                    : "Nhấn micro bên dưới để bắt đầu nói")}
             </p>
           )}
         </div>

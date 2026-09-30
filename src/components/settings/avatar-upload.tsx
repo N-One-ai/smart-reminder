@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { Camera, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { createClient } from "@/lib/supabase/client";
-import { updateProfile } from "@/lib/profile/actions";
+import { uploadAvatar } from "@/lib/profile/actions";
 import { useDictionary } from "@/lib/i18n/locale-provider";
 
 const MAX_SOURCE_FILE_BYTES = 8 * 1024 * 1024;
@@ -38,11 +37,9 @@ async function toSquareJpeg(file: File): Promise<Blob> {
 }
 
 export function AvatarUpload({
-  userId,
   name,
   initialAvatarUrl,
 }: {
-  userId: string;
   name: string;
   initialAvatarUrl: string | null;
 }) {
@@ -67,26 +64,16 @@ export function AvatarUpload({
     setUploading(true);
     try {
       const blob = await toSquareJpeg(file);
-      const supabase = createClient();
-      const path = `${userId}/avatar.jpg`;
+      const formData = new FormData();
+      formData.set("file", blob, "avatar.jpg");
 
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
-      if (uploadError) throw uploadError;
-
-      const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(path);
-      // Cache-bust — the path is stable (upsert), so without this the browser/
-      // CDN would keep serving the previous image after a re-upload.
-      const nextUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
-
-      const result = await updateProfile({ avatar_url: nextUrl });
+      const result = await uploadAvatar(formData);
       if (!result.ok) {
         toast.error(result.error.message);
         return;
       }
 
-      setAvatarUrl(nextUrl);
+      setAvatarUrl(result.data.avatarUrl);
       toast.success(dict.toasts.avatarUpdated);
       router.refresh();
     } catch (e) {

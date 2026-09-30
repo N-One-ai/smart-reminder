@@ -17,7 +17,6 @@ export default async function SettingsPage() {
 
       {user && (
         <AvatarUpload
-          userId={user.id}
           name={user.name || user.email}
           initialAvatarUrl={user.avatarUrl}
         />

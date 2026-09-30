@@ -16,9 +16,11 @@ import {
 import { cn } from "@/lib/utils";
 import { completeOccurrence, deleteReminder } from "@/lib/reminder/actions";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 export function ReminderListItem({ occurrence }: { occurrence: ReminderOccurrence }) {
   const router = useRouter();
+  const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
   const { reminder, occurrenceDate, isCompleted } = occurrence;
 
@@ -45,7 +47,7 @@ export function ReminderListItem({ occurrence }: { occurrence: ReminderOccurrenc
           toast.error(result.error.message);
           return;
         }
-        toast.success("Đã xoá lời nhắc");
+        toast.success(dict.toasts.reminderDeleted);
         router.refresh();
       } catch {
         toast.error(NETWORK_ERROR_MESSAGE);
@@ -65,7 +67,7 @@ export function ReminderListItem({ occurrence }: { occurrence: ReminderOccurrenc
         disabled={isPending}
         onCheckedChange={handleToggleComplete}
         className="size-5 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-        aria-label={`Đánh dấu hoàn thành: ${reminder.title}`}
+        aria-label={dict.reminderList.markComplete(reminder.title)}
       />
 
       {/* Time leads (priority 1), title follows (priority 2) — weight/size does
@@ -93,7 +95,7 @@ export function ReminderListItem({ occurrence }: { occurrence: ReminderOccurrenc
         <DropdownMenuTrigger asChild>
           <button
             className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-muted shrink-0"
-            aria-label="Tuỳ chọn"
+            aria-label={dict.reminderList.options}
           >
             <MoreVertical className="size-4 text-muted-foreground" />
           </button>
@@ -102,12 +104,12 @@ export function ReminderListItem({ occurrence }: { occurrence: ReminderOccurrenc
           <DropdownMenuItem asChild>
             <Link href={`/app/reminder/${reminder.id}`}>
               <Pencil className="size-4" />
-              Chỉnh sửa
+              {dict.reminderList.edit}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem variant="destructive" onClick={handleDelete}>
             <Trash2 className="size-4" />
-            Xoá
+            {dict.reminderList.delete}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

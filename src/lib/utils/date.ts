@@ -1,12 +1,4 @@
-const WEEKDAY_VI = [
-  "Chủ nhật",
-  "Thứ 2",
-  "Thứ 3",
-  "Thứ 4",
-  "Thứ 5",
-  "Thứ 6",
-  "Thứ 7",
-];
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 /** "YYYY-MM-DD" for today, in local browser time. Prototype only — real app resolves per-user timezone server-side. */
 export function todayKey(): string {
@@ -35,18 +27,18 @@ export function daysBetween(fromKey: string, toKeyStr: string): number {
   return Math.round((b - a) / 86_400_000);
 }
 
-/** Vietnamese human label for a date relative to today: "Hôm nay" / "Ngày mai" / "Thứ 7" / "28/09". */
-export function formatDayLabel(dateKey: string, todayRef: string = todayKey()): string {
+/** Locale-aware human label for a date relative to today: "Hôm nay" / "Ngày mai" / "Thứ 7" / "28/09". */
+export function formatDayLabel(dict: Dictionary, dateKey: string, todayRef: string = todayKey()): string {
   const diff = daysBetween(todayRef, dateKey);
-  if (diff === 0) return "Hôm nay";
-  if (diff === 1) return "Ngày mai";
-  if (diff === 2) return "Ngày kia";
+  if (diff === 0) return dict.dateLabels.today;
+  if (diff === 1) return dict.dateLabels.tomorrow;
+  if (diff === 2) return dict.dateLabels.dayAfterTomorrow;
 
   const [y, m, d] = dateKey.split("-").map(Number);
   const dt = new Date(y, m - 1, d);
 
   if (diff > 2 && diff <= 7) {
-    return WEEKDAY_VI[dt.getDay()];
+    return dict.weekdaysFullByGetDay[dt.getDay()];
   }
 
   return `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}`;
@@ -62,12 +54,12 @@ export function formatFullDate(dateKey: string): string {
   return `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}`;
 }
 
-/** Time-of-day greeting — "Chào buổi sáng/chiều/tối". Falls back client-safe. */
-export function greetingForHour(hour: number = new Date().getHours()): string {
-  if (hour < 11) return "Chào buổi sáng";
-  if (hour < 14) return "Chào buổi trưa";
-  if (hour < 18) return "Chào buổi chiều";
-  return "Chào buổi tối";
+/** Locale-aware time-of-day greeting. */
+export function greetingForHour(dict: Dictionary, hour: number = new Date().getHours()): string {
+  if (hour < 11) return dict.greeting.morning;
+  if (hour < 14) return dict.greeting.noon;
+  if (hour < 18) return dict.greeting.afternoon;
+  return dict.greeting.evening;
 }
 
 const WEEKDAY_EN = [

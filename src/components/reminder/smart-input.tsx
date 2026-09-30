@@ -17,6 +17,7 @@ import { parseReminderText, parseReminderImage } from "@/lib/ai/actions";
 import { createReminder } from "@/lib/reminder/actions";
 import { buildAIContext } from "@/lib/utils/date";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 type Mode = "idle" | "parsing" | "clarifying" | "preview" | "editing" | "suggesting";
 
@@ -29,6 +30,7 @@ interface SuggestionContext {
 
 export function SmartInput() {
   const router = useRouter();
+  const dict = useDictionary();
   const [inputText, setInputText] = useState("");
   const [combinedText, setCombinedText] = useState("");
   const [mode, setMode] = useState<Mode>("idle");
@@ -147,7 +149,7 @@ export function SmartInput() {
         setIsSaving(false);
         return;
       }
-      toast.success("Đã lưu lời nhắc", { description: input.title });
+      toast.success(dict.toasts.reminderSaved, { description: input.title });
       router.refresh();
 
       if (input.suggestions && input.suggestions.length > 0) {
@@ -213,7 +215,7 @@ export function SmartInput() {
               className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full bg-accent text-accent-foreground text-xs font-medium"
             >
               <PencilLine className="size-3.5" />
-              Nhập
+              {dict.smartInput.modeText}
             </button>
             {micSupported && (
               <button
@@ -222,7 +224,7 @@ export function SmartInput() {
                 className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full bg-muted text-muted-foreground text-xs font-medium"
               >
                 <Mic className="size-3.5" />
-                Nói
+                {dict.smartInput.modeVoice}
               </button>
             )}
             <button
@@ -231,7 +233,7 @@ export function SmartInput() {
               className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full bg-muted text-muted-foreground text-xs font-medium"
             >
               <Camera className="size-3.5" />
-              Scan ảnh
+              {dict.smartInput.modeScan}
             </button>
           </div>
 
@@ -239,7 +241,7 @@ export function SmartInput() {
             <Textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Bạn cần nhớ điều gì?"
+              placeholder={dict.smartInput.placeholder}
               rows={3}
               maxLength={500}
               className="resize-none text-base pr-12 border-none bg-muted focus-visible:ring-2"
@@ -256,7 +258,7 @@ export function SmartInput() {
               size="icon"
               disabled={mode === "parsing" || !inputText.trim()}
               className="absolute right-2 bottom-2"
-              aria-label="Gửi"
+              aria-label={dict.common.send}
             >
               {mode === "parsing" ? (
                 <Loader2 className="size-4 animate-spin" />

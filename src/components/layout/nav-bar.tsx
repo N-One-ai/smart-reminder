@@ -3,17 +3,19 @@
 import { usePathname } from "next/navigation";
 import { CalendarCheck, CalendarClock, CheckCircle2, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 import { RymiLogo } from "./rymi-logo";
-
-const NAV_ITEMS = [
-  { href: "/app", label: "Hôm nay", icon: CalendarCheck },
-  { href: "/app/upcoming", label: "Sắp tới", icon: CalendarClock },
-  { href: "/app/completed", label: "Hoàn thành", icon: CheckCircle2 },
-  { href: "/settings", label: "Cài đặt", icon: Settings },
-] as const;
 
 export function NavBar() {
   const pathname = usePathname();
+  const dict = useDictionary();
+
+  const NAV_ITEMS = [
+    { href: "/app", label: dict.nav.today, icon: CalendarCheck },
+    { href: "/app/upcoming", label: dict.nav.upcoming, icon: CalendarClock },
+    { href: "/app/completed", label: dict.nav.completed, icon: CheckCircle2 },
+    { href: "/settings", label: dict.nav.settings, icon: Settings },
+  ] as const;
 
   // Plain <a> tags (full page navigation), not next/link — the reminder list
   // must always reflect the database exactly, and Next.js's client-side RSC

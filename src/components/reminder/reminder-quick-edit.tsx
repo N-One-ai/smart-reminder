@@ -9,14 +9,9 @@ import { parseReminderEdit } from "@/lib/ai/actions";
 import type { ValidatedAIEditResult } from "@/lib/ai/validate";
 import { buildAIContext, formatDayLabel } from "@/lib/utils/date";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
+import { useDictionary } from "@/lib/i18n/locale-provider";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Reminder } from "@/types/reminder";
-
-const RECURRENCE_LABEL: Record<string, string> = {
-  daily: "Mỗi ngày",
-  weekly: "Mỗi tuần",
-  monthly: "Mỗi tháng",
-  yearly: "Mỗi năm",
-};
 
 // Below this, the model itself said it couldn't tell what should change —
 // force an explicit confirm instead of silently applying a guess.
@@ -24,8 +19,8 @@ const LOW_CONFIDENCE_THRESHOLD = 0.4;
 
 type Mode = "input" | "parsing" | "preview";
 
-function recurrenceLabel(r: Reminder["repeat_rule"]): string {
-  return r ? RECURRENCE_LABEL[r.frequency] : "Không";
+function recurrenceLabel(dict: Dictionary, r: Reminder["repeat_rule"]): string {
+  return r ? dict.recurrence[r.frequency] : dict.common.none;
 }
 
 function recurrenceEqual(a: Reminder["repeat_rule"], b: ValidatedAIEditResult["recurrence"]): boolean {
@@ -86,6 +81,7 @@ export function ReminderQuickEdit({
   onClose: () => void;
   saving: boolean;
 }) {
+  const dict = useDictionary();
   const [text, setText] = useState("");
   const [mode, setMode] = useState<Mode>("input");
   const [result, setResult] = useState<ValidatedAIEditResult | null>(null);
@@ -133,39 +129,37 @@ export function ReminderQuickEdit({
         <div className="flex flex-col gap-2.5">
           <DiffField
             icon={<Sparkles className="size-3.5" />}
-            label="Tiêu đề"
+            label={dict.quickEdit.fieldTitle}
             before={reminder.title}
             after={result.title}
             changed={titleChanged}
           />
           <DiffField
             icon={<Calendar className="size-3.5" />}
-            label="Ngày"
-            before={formatDayLabel(reminder.date)}
-            after={formatDayLabel(result.date)}
+            label={dict.quickEdit.fieldDate}
+            before={formatDayLabel(dict, reminder.date)}
+            after={formatDayLabel(dict, result.date)}
             changed={dateChanged}
           />
           <DiffField
             icon={<Clock className="size-3.5" />}
-            label="Giờ"
+            label={dict.quickEdit.fieldTime}
             before={reminder.time}
             after={result.time}
             changed={timeChanged}
           />
           <DiffField
             icon={<Repeat className="size-3.5" />}
-            label="Lặp lại"
-            before={recurrenceLabel(reminder.repeat_rule)}
-            after={recurrenceLabel(result.recurrence)}
+            label={dict.quickEdit.fieldRepeat}
+            before={recurrenceLabel(dict, reminder.repeat_rule)}
+            after={recurrenceLabel(dict, result.recurrence)}
             changed={recurrenceChanged}
           />
         </div>
 
         {(noChange || lowConfidence) && (
           <p className="text-xs text-amber-600 dark:text-amber-500">
-            {noChange
-              ? "Không nhận diện được thay đổi cụ thể nào từ câu nói — thử diễn đạt rõ hơn."
-              : "Mình chưa chắc chắn về thay đổi này — kiểm tra kỹ trước khi xác nhận."}
+            {noChange ? dict.quickEdit.noChange : dict.quickEdit.lowConfidence}
           </p>
         )}
 
@@ -184,7 +178,7 @@ export function ReminderQuickEdit({
             className="flex-1"
           >
             {saving && <Loader2 className="size-3.5 animate-spin" />}
-            Xác nhận
+            {dict.quickEdit.confirm}
           </Button>
           <Button
             size="sm"
@@ -197,9 +191,9 @@ export function ReminderQuickEdit({
             disabled={saving}
             className="flex-1"
           >
-            Sửa lại câu nói
+            {dict.quickEdit.editAgain}
           </Button>
-          <Button size="sm" variant="ghost" onClick={onClose} disabled={saving} aria-label="Đóng">
+          <Button size="sm" variant="ghost" onClick={onClose} disabled={saving} aria-label={dict.quickEdit.close}>
             <X className="size-4" />
           </Button>
         </div>
@@ -211,7 +205,7 @@ export function ReminderQuickEdit({
     <form onSubmit={handleSubmit} className="rounded-xl border bg-card p-4 flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Sửa nhanh bằng câu nói
+          {dict.quickEdit.heading}
         </p>
         <Button
           type="button"
@@ -219,7 +213,7 @@ export function ReminderQuickEdit({
           variant="ghost"
           onClick={onClose}
           className="size-6 -mt-1 -mr-1"
-          aria-label="Đóng"
+          aria-label={dict.quickEdit.close}
         >
           <X className="size-3.5" />
         </Button>
@@ -228,7 +222,7 @@ export function ReminderQuickEdit({
         <Textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="vd: đổi giờ họp sang 3h chiều"
+          placeholder={dict.quickEdit.placeholder}
           rows={2}
           maxLength={500}
           autoFocus
@@ -246,7 +240,7 @@ export function ReminderQuickEdit({
           size="icon"
           disabled={mode === "parsing" || !text.trim()}
           className="absolute right-1.5 bottom-1.5 size-8"
-          aria-label="Gửi"
+          aria-label={dict.quickEdit.send}
         >
           {mode === "parsing" ? (
             <Loader2 className="size-4 animate-spin" />

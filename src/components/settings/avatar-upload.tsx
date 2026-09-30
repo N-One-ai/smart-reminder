@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { updateProfile } from "@/lib/profile/actions";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 const MAX_SOURCE_FILE_BYTES = 8 * 1024 * 1024;
 const OUTPUT_SIZE = 512;
@@ -46,6 +47,7 @@ export function AvatarUpload({
   initialAvatarUrl: string | null;
 }) {
   const router = useRouter();
+  const dict = useDictionary();
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -54,11 +56,11 @@ export function AvatarUpload({
   async function handleFile(file: File | undefined) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("Vui lòng chọn một tệp ảnh.");
+      toast.error(dict.errors.avatarNotImage);
       return;
     }
     if (file.size > MAX_SOURCE_FILE_BYTES) {
-      toast.error("Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn.");
+      toast.error(dict.errors.avatarTooLarge);
       return;
     }
 
@@ -85,11 +87,11 @@ export function AvatarUpload({
       }
 
       setAvatarUrl(nextUrl);
-      toast.success("Đã cập nhật ảnh đại diện");
+      toast.success(dict.toasts.avatarUpdated);
       router.refresh();
     } catch (e) {
       console.error("[AvatarUpload] upload failed", e);
-      toast.error("Không thể tải ảnh lên. Vui lòng thử lại.");
+      toast.error(dict.errors.avatarUploadFailed);
     } finally {
       setUploading(false);
     }
@@ -112,7 +114,7 @@ export function AvatarUpload({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
-        aria-label="Đổi ảnh đại diện"
+        aria-label={dict.settings.changeAvatar}
         className="relative shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
       >
         <Avatar size="xl">
@@ -125,14 +127,14 @@ export function AvatarUpload({
       </button>
 
       <div className="flex flex-col gap-0.5">
-        <p className="text-sm font-medium">Ảnh đại diện</p>
+        <p className="text-sm font-medium">{dict.settings.avatarLabel}</p>
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           className="text-xs text-accent-foreground hover:underline self-start disabled:opacity-60"
         >
-          {uploading ? "Đang tải lên..." : "Đổi ảnh"}
+          {uploading ? dict.settings.uploading : dict.settings.changeAvatar}
         </button>
       </div>
     </div>

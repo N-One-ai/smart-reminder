@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Check, Flame, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WeeklyProgress } from "@/lib/reminder/stats";
+import { useDictionary } from "@/lib/i18n/locale-provider";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 /**
  * Deliberately no "you're failing" copy (see prd discussion) — every bracket
@@ -11,22 +13,24 @@ import type { WeeklyProgress } from "@/lib/reminder/stats";
  * audit/extend without touching render logic.
  */
 function getProgressCopy(
+  dict: Dictionary,
   completedDays: number,
   totalDays: number
 ): { headline: string; footer: string } {
   const remaining = totalDays - completedDays;
+  const t = dict.weeklyProgress;
 
   if (completedDays <= 0) {
-    return { headline: "Chưa bắt đầu tuần này", footer: "Bắt đầu ngay hôm nay nhé" };
+    return { headline: t.notStarted, footer: t.startToday };
   }
   if (remaining <= 0) {
-    return { headline: "Hoàn thành mục tiêu tuần 🎉", footer: "Bạn đã duy trì trọn vẹn cả tuần" };
+    return { headline: t.goalComplete, footer: t.fullWeekDone };
   }
 
-  const footer = `Còn ${remaining} ngày để đạt mục tiêu`;
-  if (completedDays <= 2) return { headline: "Bạn đã bắt đầu rồi", footer };
-  if (completedDays <= 4) return { headline: "Bạn đang duy trì tốt", footer };
-  return { headline: "Gần đạt mục tiêu rồi", footer };
+  const footer = t.daysToGoal(remaining);
+  if (completedDays <= 2) return { headline: t.justStarted, footer };
+  if (completedDays <= 4) return { headline: t.goingWell, footer };
+  return { headline: t.almostThere, footer };
 }
 
 export function WeeklyProgressCard({
@@ -36,10 +40,11 @@ export function WeeklyProgressCard({
   progress: WeeklyProgress;
   onClick?: () => void;
 }) {
+  const dict = useDictionary();
   const { completedDays, totalDays, days } = progress;
   const percent = totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
   const isComplete = totalDays > 0 && completedDays >= totalDays;
-  const { headline, footer } = getProgressCopy(completedDays, totalDays);
+  const { headline, footer } = getProgressCopy(dict, completedDays, totalDays);
 
   // Animate the bar from 0 on mount instead of snapping straight to its
   // value — a one-time rAF flip after first paint is enough, no need for a
@@ -59,15 +64,15 @@ export function WeeklyProgressCard({
       <div className="flex items-center justify-between gap-3 min-w-0">
         <div className="flex items-center gap-1.5 text-xs font-medium text-background/70 min-w-0">
           <Zap className="size-3.5 fill-current text-primary shrink-0" />
-          <span className="truncate">Duy trì thói quen</span>
+          <span className="truncate">{dict.weeklyProgress.maintainHabit}</span>
         </div>
-        <span className="text-xs font-medium text-background/50 shrink-0">Tuần này</span>
+        <span className="text-xs font-medium text-background/50 shrink-0">{dict.weeklyProgress.thisWeek}</span>
       </div>
 
       <div className="flex flex-col gap-1 min-w-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
         <p className="font-heading text-2xl font-bold text-background leading-none min-w-0">
           {completedDays}
-          <span className="text-background/50 text-base font-medium">/{totalDays} ngày</span>
+          <span className="text-background/50 text-base font-medium">/{totalDays} {dict.weeklyProgress.daysUnit}</span>
         </p>
         <p
           className={cn(

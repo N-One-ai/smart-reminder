@@ -1,9 +1,13 @@
+"use client";
+
 import { CheckCircle2 } from "lucide-react";
 import { ReminderListItem } from "@/components/reminder/reminder-list-item";
 import { EmptyState } from "@/components/reminder/empty-state";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 import type { Reminder, ReminderOccurrence } from "@/types/reminder";
 
 export function CompletedView({ reminders }: { reminders: Reminder[] }) {
+  const dict = useDictionary();
   const occurrences: ReminderOccurrence[] = reminders.map((reminder) => ({
     reminder,
     occurrenceDate: reminder.date,
@@ -12,13 +16,13 @@ export function CompletedView({ reminders }: { reminders: Reminder[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-heading text-xl font-bold tracking-tight">Đã hoàn thành</h1>
+      <h1 className="font-heading text-xl font-bold tracking-tight">{dict.dashboard.completedTitle}</h1>
 
       {occurrences.length === 0 ? (
         <EmptyState
           icon={CheckCircle2}
-          title="Chưa có gì hoàn thành"
-          description="Các lời nhắc bạn đã hoàn thành sẽ xuất hiện ở đây."
+          title={dict.dashboard.emptyCompletedTitle}
+          description={dict.dashboard.emptyCompletedDescription}
         />
       ) : (
         <div className="flex flex-col gap-2">

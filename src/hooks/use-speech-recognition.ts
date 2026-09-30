@@ -1,15 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 export type MicPermissionState = "unknown" | "granted" | "denied";
-
-const MSG_NO_MEDIA_DEVICES = "Trình duyệt này không hỗ trợ ghi âm micro.";
-const MSG_NO_MICROPHONE = "Không tìm thấy micro trên thiết bị này.";
-const MSG_PERMISSION_DENIED =
-  "Bạn đã từ chối quyền micro. Hãy cấp quyền Microphone trong cài đặt trình duyệt để sử dụng tính năng này.";
-const MSG_NO_SPEECH = "Không nghe thấy gì. Hãy thử nói lại.";
-const MSG_UNKNOWN = "Không nhận diện được giọng nói. Vui lòng thử lại.";
 
 /**
  * Wraps the Web Speech API's SpeechRecognition (Chrome/Edge; vendor-prefixed
@@ -42,6 +36,7 @@ export function useSpeechRecognition({
    * ever get the finished transcript via onResult. */
   onInterim?: (transcript: string) => void;
 }) {
+  const dict = useDictionary();
   const [isSupported, setIsSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [permissionState, setPermissionState] = useState<MicPermissionState>("unknown");
@@ -97,12 +92,12 @@ export function useSpeechRecognition({
 
     recognition.onerror = (e) => {
       if (e.error === "no-speech") {
-        onError(MSG_NO_SPEECH);
+        onError(dict.errors.micNoSpeech);
       } else if (e.error === "not-allowed" || e.error === "service-not-allowed") {
         setPermissionState("denied");
-        onError(MSG_PERMISSION_DENIED);
+        onError(dict.errors.micPermissionDenied);
       } else {
-        onError(MSG_UNKNOWN);
+        onError(dict.errors.micUnknown);
       }
     };
 
@@ -124,7 +119,7 @@ export function useSpeechRecognition({
 
     const Ctor = window.SpeechRecognition ?? window.webkitSpeechRecognition;
     if (!Ctor || !navigator.mediaDevices?.getUserMedia) {
-      onError(MSG_NO_MEDIA_DEVICES);
+      onError(dict.errors.micUnsupported);
       return;
     }
 
@@ -139,11 +134,11 @@ export function useSpeechRecognition({
       const name = e instanceof DOMException ? e.name : "";
       if (name === "NotAllowedError" || name === "SecurityError") {
         setPermissionState("denied");
-        onError(MSG_PERMISSION_DENIED);
+        onError(dict.errors.micPermissionDenied);
       } else if (name === "NotFoundError" || name === "DevicesNotFoundError") {
-        onError(MSG_NO_MICROPHONE);
+        onError(dict.errors.micNoDevice);
       } else {
-        onError(MSG_UNKNOWN);
+        onError(dict.errors.micUnknown);
       }
       return;
     }

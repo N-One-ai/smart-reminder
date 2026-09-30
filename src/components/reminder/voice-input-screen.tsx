@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeft, Keyboard, Mic, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 /**
  * Full-screen voice capture, modeled on the reference mock: a large centered
@@ -25,6 +26,7 @@ export function VoiceInputScreen({
   onDone: (text: string) => void;
   onCancel: () => void;
 }) {
+  const dict = useDictionary();
   const [liveText, setLiveText] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasStarted, setHasStarted] = useState(false);
@@ -60,12 +62,12 @@ export function VoiceInputScreen({
       <div className="flex items-center gap-2 px-4 py-3">
         <button
           onClick={onCancel}
-          aria-label="Quay lại"
+          aria-label={dict.voiceScreen.back}
           className="flex size-9 items-center justify-center rounded-full hover:bg-muted text-foreground"
         >
           <ArrowLeft className="size-5" />
         </button>
-        <p className="font-heading text-base font-bold">Nói để nhập</p>
+        <p className="font-heading text-base font-bold">{dict.voiceScreen.title}</p>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center gap-10 px-8">
@@ -104,10 +106,10 @@ export function VoiceInputScreen({
             >
               {liveText ||
                 (isListening
-                  ? "Đang nghe..."
+                  ? dict.voiceScreen.listening
                   : hasStarted
-                    ? "Nhấn micro bên dưới để nói lại"
-                    : "Nhấn micro bên dưới để bắt đầu nói")}
+                    ? dict.voiceScreen.tapToRetry
+                    : dict.voiceScreen.tapToStart)}
             </p>
           )}
         </div>
@@ -117,7 +119,7 @@ export function VoiceInputScreen({
         <button
           type="button"
           onClick={handleKeyboardTap}
-          aria-label="Chuyển sang gõ tay"
+          aria-label={dict.voiceScreen.switchToKeyboard}
           className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground shrink-0"
         >
           <Keyboard className="size-5" />
@@ -126,7 +128,7 @@ export function VoiceInputScreen({
         <button
           type="button"
           onClick={handleMicTap}
-          aria-label={isListening ? "Dừng nói" : "Bắt đầu nói"}
+          aria-label={isListening ? dict.voiceScreen.stop : dict.voiceScreen.start}
           className={cn(
             "flex items-center justify-center size-20 rounded-full shrink-0 transition-transform active:scale-95",
             isListening
@@ -140,7 +142,7 @@ export function VoiceInputScreen({
         <button
           type="button"
           onClick={onCancel}
-          aria-label="Huỷ"
+          aria-label={dict.voiceScreen.cancel}
           className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground shrink-0"
         >
           <X className="size-5" />

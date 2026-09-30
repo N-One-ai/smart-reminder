@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { RymiLogo } from "@/components/layout/rymi-logo";
 import { cn } from "@/lib/utils";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 // Real auth-check time drives navigation, per spec — this is only a floor so
 // the brand moment never feels like a flicker on a fast/cached session.
@@ -20,6 +21,7 @@ const EXIT_DURATION_MS = 250;
  */
 export function SplashScreen() {
   const router = useRouter();
+  const dict = useDictionary();
   const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export function SplashScreen() {
     >
       <RymiLogo className="h-14 w-auto text-primary animate-in fade-in zoom-in-95 duration-500 ease-out" />
       <p className="text-white/50 text-xs animate-in fade-in duration-500 delay-100 fill-mode-both">
-        Trợ lý giúp bạn nhớ mọi thứ
+        {dict.splash.tagline}
       </p>
     </div>
   );

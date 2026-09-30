@@ -23,17 +23,12 @@ import { completeOccurrence, deleteReminder, updateReminder } from "@/lib/remind
 import { formatFullDate, todayKey } from "@/lib/utils/date";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
 import type { ValidatedAIEditResult } from "@/lib/ai/validate";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 import type { Reminder } from "@/types/reminder";
-
-const RECURRENCE_LABEL: Record<string, string> = {
-  daily: "Mỗi ngày",
-  weekly: "Mỗi tuần",
-  monthly: "Mỗi tháng",
-  yearly: "Mỗi năm",
-};
 
 export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
   const router = useRouter();
+  const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
   const [quickEditing, setQuickEditing] = useState(false);
@@ -58,7 +53,7 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
           toast.error(result.error.message);
           return;
         }
-        toast.success("Đã lưu thay đổi");
+        toast.success(dict.toasts.changesSaved);
         setEditing(false);
         router.refresh();
       } catch {
@@ -87,7 +82,7 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
           toast.error(result.error.message);
           return;
         }
-        toast.success("Đã lưu thay đổi");
+        toast.success(dict.toasts.changesSaved);
         setQuickEditing(false);
         router.refresh();
       } catch {
@@ -119,7 +114,7 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
           toast.error(result.error.message);
           return;
         }
-        toast.success("Đã xoá lời nhắc");
+        toast.success(dict.toasts.reminderDeleted);
         router.push("/app");
         router.refresh();
       } catch {
@@ -135,7 +130,7 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
         className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground w-fit"
       >
         <ArrowLeft className="size-4" />
-        Quay lại
+        {dict.reminderDetail.back}
       </button>
 
       {editing ? (
@@ -183,23 +178,23 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
 
           <div className="flex flex-col gap-1.5">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Lặp lại
+              {dict.reminderDetail.repeat}
             </p>
             <p className="text-sm flex items-center gap-1.5">
               {reminder.repeat_rule ? (
                 <>
                   <Repeat className="size-3.5" />
-                  {RECURRENCE_LABEL[reminder.repeat_rule.frequency]}
+                  {dict.recurrence[reminder.repeat_rule.frequency]}
                 </>
               ) : (
-                "Không"
+                dict.common.none
               )}
             </p>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Ghi chú
+              {dict.reminderDetail.note}
             </p>
             <p className="text-sm text-muted-foreground">{reminder.description || "—"}</p>
           </div>
@@ -214,7 +209,7 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
               className="flex-1"
             >
               <Sparkles className="size-4" />
-              Sửa nhanh
+              {dict.reminderDetail.quickEdit}
             </Button>
             <Button
               variant="outline"
@@ -223,7 +218,7 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
               className="flex-1"
             >
               <Pencil className="size-4" />
-              Chỉnh sửa
+              {dict.reminderDetail.edit}
             </Button>
             <Button
               variant={isCompleted ? "outline" : "default"}
@@ -232,7 +227,7 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
               className="flex-1"
             >
               <CheckCircle2 className="size-4" />
-              {isCompleted ? "Bỏ hoàn thành" : "Hoàn thành"}
+              {isCompleted ? dict.reminderDetail.markUndone : dict.reminderDetail.markDone}
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -242,21 +237,21 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
                   className="flex-1 text-destructive hover:text-destructive"
                 >
                   <Trash2 className="size-4" />
-                  Xoá
+                  {dict.reminderDetail.delete}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Xoá lời nhắc này?</AlertDialogTitle>
+                  <AlertDialogTitle>{dict.reminderDetail.deleteConfirmTitle}</AlertDialogTitle>
                   <AlertDialogDescription>
                     {reminder.repeat_rule
-                      ? "Đây là lời nhắc lặp lại — xoá sẽ huỷ toàn bộ chuỗi, không chỉ lần này."
-                      : "Hành động này không thể hoàn tác."}
+                      ? dict.reminderDetail.deleteConfirmRecurring
+                      : dict.reminderDetail.deleteConfirmOnce}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Huỷ</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Xoá</AlertDialogAction>
+                  <AlertDialogCancel>{dict.common.cancel}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>{dict.reminderDetail.delete}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

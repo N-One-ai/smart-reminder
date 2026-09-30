@@ -1,3 +1,5 @@
+"use client";
+
 import { CalendarClock } from "lucide-react";
 import { ReminderListItem } from "@/components/reminder/reminder-list-item";
 import { EmptyState } from "@/components/reminder/empty-state";
@@ -5,6 +7,7 @@ import { DayGroupHeader } from "./day-group-header";
 import { expandAllOccurrences } from "@/lib/reminder/recurrence";
 import { groupByDay } from "@/lib/reminder/grouping";
 import { todayKey } from "@/lib/utils/date";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 import type { Reminder } from "@/types/reminder";
 
 export function UpcomingView({
@@ -14,19 +17,20 @@ export function UpcomingView({
   reminders: Reminder[];
   windowEnd: string;
 }) {
+  const dict = useDictionary();
   const today = todayKey();
   const occurrences = expandAllOccurrences(reminders, today, windowEnd);
-  const groups = groupByDay(occurrences);
+  const groups = groupByDay(dict, occurrences);
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-heading text-xl font-bold tracking-tight">Sắp tới</h1>
+      <h1 className="font-heading text-xl font-bold tracking-tight">{dict.dashboard.upcomingTitle}</h1>
 
       {groups.length === 0 ? (
         <EmptyState
           icon={CalendarClock}
-          title="Không có lời nhắc nào sắp tới"
-          description="Mọi thứ đã được nhắc xong — hoặc bạn chưa tạo lời nhắc nào."
+          title={dict.dashboard.emptyUpcomingTitle}
+          description={dict.dashboard.emptyUpcomingDescription}
         />
       ) : (
         <div className="flex flex-col gap-6">

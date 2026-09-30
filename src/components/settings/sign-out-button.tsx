@@ -9,9 +9,11 @@ import { signOut } from "@/lib/auth/actions";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
 import { TALL_PILL_BUTTON_CLASS } from "@/lib/ui/form-controls";
 import { cn } from "@/lib/utils";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 export function SignOutButton() {
   const router = useRouter();
+  const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
 
   function handleClick() {
@@ -34,7 +36,7 @@ export function SignOutButton() {
       className={cn("w-fit px-6", TALL_PILL_BUTTON_CLASS)}
     >
       {isPending ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}
-      Đăng xuất
+      {dict.settings.signOut}
     </Button>
   );
 }

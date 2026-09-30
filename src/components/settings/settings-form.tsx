@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,9 @@ import {
   TALL_PILL_BUTTON_CLASS,
 } from "@/lib/ui/form-controls";
 import { cn } from "@/lib/utils";
+import { useDictionary, useLocale } from "@/lib/i18n/locale-provider";
+import { setLocale } from "@/lib/i18n/actions";
+import { LOCALES, type Locale } from "@/lib/i18n/config";
 
 const COMMON_TIMEZONES = [
   "Asia/Ho_Chi_Minh",
@@ -39,6 +43,11 @@ const TZ_ALIASES: Record<string, string> = {
   "Asia/Saigon": "Asia/Ho_Chi_Minh",
 };
 
+const LOCALE_LABEL: Record<Locale, string> = {
+  vi: "Tiếng Việt",
+  en: "English",
+};
+
 export function SettingsForm({
   initialName,
   email,
@@ -48,6 +57,9 @@ export function SettingsForm({
   email: string;
   initialTimezone: string;
 }) {
+  const router = useRouter();
+  const dict = useDictionary();
+  const locale = useLocale();
   const [name, setName] = useState(initialName);
   const [timezone, setTimezone] = useState(initialTimezone);
   const [detected, setDetected] = useState<string | null>(null);
@@ -82,17 +94,22 @@ export function SettingsForm({
           toast.error(result.error.message);
           return;
         }
-        toast.success("Đã lưu cài đặt");
+        toast.success(dict.toasts.settingsSaved);
       } catch {
         toast.error(NETWORK_ERROR_MESSAGE);
       }
     });
   }
 
+  async function handleLocaleChange(next: Locale) {
+    await setLocale(next);
+    router.refresh();
+  }
+
   return (
     <form onSubmit={handleSave} className="rounded-xl border bg-card p-5 flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="name">Họ và tên</Label>
+        <Label htmlFor="name">{dict.settings.fullName}</Label>
         <Input
           id="name"
           value={name}
@@ -102,12 +119,12 @@ export function SettingsForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{dict.settings.email}</Label>
         <Input id="email" value={email} disabled className={TALL_INPUT_CLASS} />
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="timezone">Múi giờ</Label>
+        <Label htmlFor="timezone">{dict.settings.timezone}</Label>
         <Select value={timezone} onValueChange={setTimezone}>
           <SelectTrigger id="timezone" className={cn("w-full", TALL_SELECT_TRIGGER_CLASS)}>
             <SelectValue />
@@ -126,18 +143,34 @@ export function SettingsForm({
             onClick={() => setTimezone(detected)}
             className="text-xs text-accent-foreground hover:underline self-start"
           >
-            Trình duyệt phát hiện {detected} — dùng múi giờ này?
+            {dict.settings.detectedTimezone(detected)}
           </button>
         )}
         {detectedDiffers && !detectedIsListed && (
           <p className="text-xs text-muted-foreground">
-            Trình duyệt phát hiện: {detected} (chưa có trong danh sách)
+            {dict.settings.detectedTimezoneUnlisted(detected)}
           </p>
         )}
       </div>
 
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="language">{dict.settings.language}</Label>
+        <Select value={locale} onValueChange={(value) => handleLocaleChange(value as Locale)}>
+          <SelectTrigger id="language" className={cn("w-full", TALL_SELECT_TRIGGER_CLASS)}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {LOCALES.map((l) => (
+              <SelectItem key={l} value={l}>
+                {LOCALE_LABEL[l]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <Button type="submit" disabled={isPending} className={cn("mt-1", TALL_PILL_BUTTON_CLASS)}>
-        Lưu thay đổi
+        {dict.settings.save}
       </Button>
     </form>
   );

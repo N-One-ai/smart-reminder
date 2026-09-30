@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { createReminder } from "@/lib/reminder/actions";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 /**
  * Checklist of AI-suggested related tasks (spec §12) — shown after the main
@@ -30,6 +31,7 @@ export function SmartSuggestionList({
   onDismiss: () => void;
 }) {
   const router = useRouter();
+  const dict = useDictionary();
   const [added, setAdded] = useState<Set<number>>(new Set());
   const [pending, setPending] = useState<Set<number>>(new Set());
   const [addingAll, setAddingAll] = useState(false);
@@ -83,7 +85,7 @@ export function SmartSuggestionList({
     <div className="rounded-xl border bg-card p-4 flex flex-col gap-3 animate-in fade-in slide-in-from-top-1">
       <div className="flex items-center gap-2">
         <Sparkles className="size-4 text-accent-foreground" />
-        <p className="text-sm font-medium">Có thể bạn muốn nhớ thêm:</p>
+        <p className="text-sm font-medium">{dict.suggestions.heading}</p>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -113,10 +115,10 @@ export function SmartSuggestionList({
           disabled={allAdded || addingAll}
           className="flex-1"
         >
-          {allAdded ? "Đã thêm tất cả" : "Thêm tất cả"}
+          {allAdded ? dict.suggestions.allAdded : dict.suggestions.addAll}
         </Button>
         <Button size="sm" variant="ghost" onClick={onDismiss} className="flex-1">
-          Bỏ qua
+          {dict.suggestions.dismiss}
         </Button>
       </div>
     </div>

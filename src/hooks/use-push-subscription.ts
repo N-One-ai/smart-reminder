@@ -1,6 +1,7 @@
 "use client";
 
 import { subscribePush, unsubscribePush } from "@/lib/push/actions";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -28,6 +29,8 @@ function toSubscriptionInput(subscription: PushSubscription) {
  * .subscribe() with userVisibleOnly:true silently relies on it.
  */
 export function usePushSubscription() {
+  const dict = useDictionary();
+
   async function isSupported(): Promise<boolean> {
     return (
       typeof window !== "undefined" &&
@@ -39,7 +42,7 @@ export function usePushSubscription() {
 
   async function subscribe(): Promise<{ ok: boolean; error?: string }> {
     const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    if (!publicKey) return { ok: false, error: "Thiếu cấu hình Web Push" };
+    if (!publicKey) return { ok: false, error: dict.errors.pushMissingConfig };
 
     try {
       const registration = await navigator.serviceWorker.ready;
@@ -56,7 +59,7 @@ export function usePushSubscription() {
       return { ok: true };
     } catch (e) {
       console.error("[usePushSubscription] subscribe failed", e);
-      return { ok: false, error: "Không thể bật thông báo đẩy trên trình duyệt này." };
+      return { ok: false, error: dict.errors.pushEnableFailed };
     }
   }
 
@@ -73,7 +76,7 @@ export function usePushSubscription() {
       return { ok: true };
     } catch (e) {
       console.error("[usePushSubscription] unsubscribe failed", e);
-      return { ok: false, error: "Không thể tắt thông báo đẩy." };
+      return { ok: false, error: dict.errors.pushDisableFailed };
     }
   }
 

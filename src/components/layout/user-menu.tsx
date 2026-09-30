@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/lib/auth/actions";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 export function UserMenu({
   name,
@@ -29,6 +30,7 @@ export function UserMenu({
   avatarSize?: "default" | "lg";
 }) {
   const router = useRouter();
+  const dict = useDictionary();
   const [, startTransition] = useTransition();
   const initial = (name || "?").charAt(0).toUpperCase();
 
@@ -48,7 +50,7 @@ export function UserMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          aria-label={`Menu tài khoản: ${name}`}
+          aria-label={dict.userMenu.accountMenu(name)}
           className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Avatar size={avatarSize}>
@@ -66,12 +68,12 @@ export function UserMenu({
         <DropdownMenuItem asChild>
           <Link href="/settings">
             <Settings className="size-4" />
-            Cài đặt
+            {dict.nav.settings}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="size-4" />
-          Đăng xuất
+          {dict.settings.signOut}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

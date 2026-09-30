@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { ArrowLeft, Camera, Images, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 const MAX_SOURCE_FILE_BYTES = 20 * 1024 * 1024; // 20MB — guard before we ever touch the canvas
 const COMPRESS_MAX_DIMENSION = 1600;
@@ -50,6 +51,7 @@ export function ImageScanScreen({
   onAnalyze: (base64: string, mimeType: string) => void;
   onCancel: () => void;
 }) {
+  const dict = useDictionary();
   const [captured, setCaptured] = useState<CapturedImage | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -58,7 +60,7 @@ export function ImageScanScreen({
   async function handleFile(file: File | undefined, source: "camera" | "library") {
     if (!file) return;
     if (file.size > MAX_SOURCE_FILE_BYTES) {
-      toast.error("Ảnh quá lớn. Vui lòng chọn ảnh khác hoặc chụp lại.");
+      toast.error(dict.scanScreen.tooLarge);
       return;
     }
 
@@ -68,7 +70,7 @@ export function ImageScanScreen({
       setCaptured({ dataUrl, base64, mimeType, source });
     } catch (e) {
       console.error("[ImageScanScreen] compress failed", e);
-      toast.error("Không thể xử lý ảnh này. Vui lòng thử ảnh khác.");
+      toast.error(dict.scanScreen.processFailed);
     } finally {
       setIsProcessing(false);
     }
@@ -106,19 +108,19 @@ export function ImageScanScreen({
       <div className="flex items-center gap-2 px-4 py-3">
         <button
           onClick={onCancel}
-          aria-label="Quay lại"
+          aria-label={dict.scanScreen.back}
           className="flex size-9 items-center justify-center rounded-full hover:bg-muted text-foreground"
         >
           <ArrowLeft className="size-5" />
         </button>
-        <p className="font-heading text-base font-bold">Scan ảnh</p>
+        <p className="font-heading text-base font-bold">{dict.scanScreen.title}</p>
       </div>
 
       {captured ? (
         <div className="flex-1 flex flex-col px-6 pb-8 gap-5 min-h-0">
           <div className="flex-1 min-h-0 rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element -- transient client-side preview of a locally compressed capture, never a served asset */}
-            <img src={captured.dataUrl} alt="Ảnh đã chọn" className="max-w-full max-h-full object-contain" />
+            <img src={captured.dataUrl} alt={dict.scanScreen.selectedImageAlt} className="max-w-full max-h-full object-contain" />
           </div>
 
           <div className="flex items-center gap-3">
@@ -128,7 +130,7 @@ export function ImageScanScreen({
               className="flex-1 flex items-center justify-center gap-2 h-12 rounded-full bg-muted text-muted-foreground text-sm font-medium"
             >
               <RefreshCw className="size-4" />
-              {captured.source === "camera" ? "Chụp lại" : "Chọn ảnh khác"}
+              {captured.source === "camera" ? dict.scanScreen.retake : dict.scanScreen.chooseAnother}
             </button>
             <button
               type="button"
@@ -136,7 +138,7 @@ export function ImageScanScreen({
               className="flex-1 flex items-center justify-center gap-2 h-12 rounded-full bg-primary text-primary-foreground text-sm font-semibold"
             >
               <Sparkles className="size-4" />
-              Phân tích ảnh
+              {dict.scanScreen.analyze}
             </button>
           </div>
         </div>
@@ -149,7 +151,7 @@ export function ImageScanScreen({
             className="w-full max-w-xs flex items-center justify-center gap-2.5 h-14 rounded-full bg-primary text-primary-foreground font-semibold transition-transform active:scale-[0.98] disabled:opacity-60"
           >
             {isProcessing ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
-            Chụp ảnh
+            {dict.scanScreen.takePhoto}
           </button>
           <button
             type="button"
@@ -158,11 +160,10 @@ export function ImageScanScreen({
             className="w-full max-w-xs flex items-center justify-center gap-2.5 h-14 rounded-full bg-muted text-foreground font-semibold transition-transform active:scale-[0.98] disabled:opacity-60"
           >
             <Images className="size-5" />
-            Chọn từ thư viện
+            {dict.scanScreen.chooseFromLibrary}
           </button>
           <p className="text-xs text-muted-foreground text-center max-w-xs pt-2">
-            Chụp hoặc chọn ảnh ghi chú, hóa đơn, vé, poster, lịch... Rymi sẽ tự đọc và đề xuất
-            lời nhắc.
+            {dict.scanScreen.hint}
           </p>
         </div>
       )}

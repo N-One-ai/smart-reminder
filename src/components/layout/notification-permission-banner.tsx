@@ -5,10 +5,12 @@ import { Bell, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 const DISMISS_KEY = "smart-reminder:notif-banner-dismissed";
 
 export function NotificationPermissionBanner() {
+  const dict = useDictionary();
   const [visible, setVisible] = useState(false);
   const { subscribe } = usePushSubscription();
 
@@ -38,7 +40,7 @@ export function NotificationPermissionBanner() {
       return;
     }
     if (result.ok) {
-      toast.success("Đã bật thông báo đẩy — Rymi sẽ nhắc bạn kể cả khi không mở app");
+      toast.success(dict.notificationBanner.subscribedToast);
     }
   }
 
@@ -51,15 +53,15 @@ export function NotificationPermissionBanner() {
     <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3">
       <Bell className="size-4 text-accent-foreground shrink-0" />
       <p className="flex-1 text-sm">
-        Bật thông báo để Rymi nhắc bạn đúng giờ khi app đang mở.
+        {dict.notificationBanner.text}
       </p>
       <Button size="sm" onClick={handleEnable}>
-        Bật thông báo
+        {dict.notificationBanner.enable}
       </Button>
       <button
         onClick={handleDismiss}
         className="p-1 rounded-md hover:bg-muted text-muted-foreground shrink-0"
-        aria-label="Đóng"
+        aria-label={dict.notificationBanner.close}
       >
         <X className="size-4" />
       </button>

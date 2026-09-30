@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MessageCircleQuestion, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 export function ClarificationPrompt({
   question,
@@ -14,6 +15,7 @@ export function ClarificationPrompt({
   onAnswer: (answer: string) => void;
   onCancel: () => void;
 }) {
+  const dict = useDictionary();
   const [answer, setAnswer] = useState("");
 
   function submit(e: React.FormEvent) {
@@ -37,10 +39,10 @@ export function ClarificationPrompt({
           autoFocus
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
-          placeholder="Trả lời..."
+          placeholder={dict.clarification.answerPlaceholder}
           className="flex-1"
         />
-        <Button type="submit" size="icon" aria-label="Gửi">
+        <Button type="submit" size="icon" aria-label={dict.common.send}>
           <Send className="size-4" />
         </Button>
       </form>
@@ -50,7 +52,7 @@ export function ClarificationPrompt({
         onClick={onCancel}
         className="text-xs text-muted-foreground hover:text-foreground self-start"
       >
-        Huỷ
+        {dict.clarification.cancel}
       </button>
     </div>
   );

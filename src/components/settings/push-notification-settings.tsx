@@ -5,10 +5,12 @@ import { Bell, BellOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 type Status = "checking" | "unsupported" | "denied" | "subscribed" | "not-subscribed";
 
 export function PushNotificationSettings() {
+  const dict = useDictionary();
   const [status, setStatus] = useState<Status>("checking");
   const [busy, setBusy] = useState(false);
   const { isSupported, subscribe, unsubscribe } = usePushSubscription();
@@ -44,11 +46,11 @@ export function PushNotificationSettings() {
       if (status === "subscribed") {
         const result = await unsubscribe();
         if (!result.ok) {
-          toast.error(result.error ?? "Không thể tắt thông báo đẩy");
+          toast.error(result.error ?? dict.errors.pushDisableFailed);
           return;
         }
         setStatus("not-subscribed");
-        toast.success("Đã tắt thông báo đẩy");
+        toast.success(dict.toasts.pushDisabled);
         return;
       }
 
@@ -60,11 +62,11 @@ export function PushNotificationSettings() {
       }
       const result = await subscribe();
       if (!result.ok) {
-        toast.error(result.error ?? "Không thể bật thông báo đẩy");
+        toast.error(result.error ?? dict.errors.pushEnableFailed);
         return;
       }
       setStatus("subscribed");
-      toast.success("Đã bật thông báo đẩy");
+      toast.success(dict.toasts.pushEnabled);
     } finally {
       setBusy(false);
     }
@@ -75,9 +77,9 @@ export function PushNotificationSettings() {
   if (status === "unsupported") {
     return (
       <div className="flex flex-col gap-1">
-        <p className="text-sm font-medium">Thông báo đẩy</p>
+        <p className="text-sm font-medium">{dict.settings.pushNotifications}</p>
         <p className="text-xs text-muted-foreground">
-          Trình duyệt này chưa hỗ trợ thông báo đẩy.
+          {dict.settings.pushUnsupported}
         </p>
       </div>
     );
@@ -86,13 +88,13 @@ export function PushNotificationSettings() {
   return (
     <div className="flex items-center justify-between gap-4">
       <div className="flex flex-col gap-1">
-        <p className="text-sm font-medium">Thông báo đẩy</p>
+        <p className="text-sm font-medium">{dict.settings.pushNotifications}</p>
         <p className="text-xs text-muted-foreground">
           {status === "denied"
-            ? "Bạn đã chặn quyền thông báo — cần bật lại trong cài đặt trình duyệt."
+            ? dict.settings.pushDenied
             : status === "subscribed"
-              ? "Đang bật — Rymi sẽ nhắc bạn kể cả khi không mở app."
-              : "Nhận nhắc nhở kể cả khi không mở app."}
+              ? dict.settings.pushSubscribed
+              : dict.settings.pushNotSubscribed}
         </p>
       </div>
       <Button
@@ -108,7 +110,7 @@ export function PushNotificationSettings() {
         ) : (
           <Bell className="size-4" />
         )}
-        {status === "subscribed" ? "Tắt" : "Bật"}
+        {status === "subscribed" ? dict.settings.pushOff : dict.settings.pushOn}
       </Button>
     </div>
   );

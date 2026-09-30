@@ -1,9 +1,7 @@
 import type { Reminder } from "@/types/reminder";
 import { expandAllOccurrences } from "./recurrence";
 import { addDays } from "@/lib/utils/date";
-
-/** Mon..Sun short labels, matching the Monday-start calendar week below. */
-const WEEKDAY_SHORT = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 export interface WeeklyProgressDay {
   dateKey: string;
@@ -27,7 +25,7 @@ export interface WeeklyProgress {
  * keep it simple). Returns a per-day breakdown so the dashboard can render
  * one dot per weekday instead of just a single completed/total count.
  */
-export function computeWeeklyProgress(reminders: Reminder[], today: string): WeeklyProgress {
+export function computeWeeklyProgress(dict: Dictionary, reminders: Reminder[], today: string): WeeklyProgress {
   const [y, m, d] = today.split("-").map(Number);
   const jsDay = new Date(y, m - 1, d).getDay(); // 0=Sun..6=Sat
   const offsetFromMonday = (jsDay + 6) % 7;
@@ -44,7 +42,7 @@ export function computeWeeklyProgress(reminders: Reminder[], today: string): Wee
     const dateKey = addDays(weekStart, i);
     return {
       dateKey,
-      label: WEEKDAY_SHORT[i],
+      label: dict.weekdaysShort[i],
       isCompleted: daysWithCompletion.has(dateKey),
       isToday: dateKey === today,
       isFuture: dateKey > today,

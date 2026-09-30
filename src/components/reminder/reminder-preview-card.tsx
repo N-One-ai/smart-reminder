@@ -1,14 +1,10 @@
+"use client";
+
 import { Bell, Calendar, Clock, Loader2, Repeat } from "lucide-react";
 import type { AIParseResult } from "@/types/ai";
 import { Button } from "@/components/ui/button";
 import { formatDayLabel } from "@/lib/utils/date";
-
-const RECURRENCE_LABEL: Record<string, string> = {
-  daily: "Mỗi ngày",
-  weekly: "Mỗi tuần",
-  monthly: "Mỗi tháng",
-  yearly: "Mỗi năm",
-};
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 export function ReminderPreviewCard({
   result,
@@ -21,6 +17,7 @@ export function ReminderPreviewCard({
   onConfirm: () => void;
   onEdit: () => void;
 }) {
+  const dict = useDictionary();
   if (!result.date || !result.time || !result.title) return null;
 
   return (
@@ -34,7 +31,7 @@ export function ReminderPreviewCard({
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Calendar className="size-3.5" />
-              {formatDayLabel(result.date)}
+              {formatDayLabel(dict, result.date)}
             </span>
             <span className="flex items-center gap-1">
               <Clock className="size-3.5" />
@@ -43,7 +40,7 @@ export function ReminderPreviewCard({
             {result.recurrence && (
               <span className="flex items-center gap-1">
                 <Repeat className="size-3.5" />
-                {RECURRENCE_LABEL[result.recurrence.frequency]}
+                {dict.recurrence[result.recurrence.frequency]}
               </span>
             )}
           </div>
@@ -53,10 +50,10 @@ export function ReminderPreviewCard({
       <div className="flex items-center gap-2">
         <Button size="sm" onClick={onConfirm} disabled={saving} className="flex-1">
           {saving && <Loader2 className="size-3.5 animate-spin" />}
-          Xác nhận
+          {dict.reminderCard.confirm}
         </Button>
         <Button size="sm" variant="outline" onClick={onEdit} disabled={saving} className="flex-1">
-          Chỉnh sửa
+          {dict.reminderCard.edit}
         </Button>
       </div>
     </div>

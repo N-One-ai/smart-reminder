@@ -5,6 +5,7 @@ import { getTodayReminders, markNotified } from "@/lib/reminder/actions";
 import { expandOccurrences } from "@/lib/reminder/recurrence";
 import { isDueForNotification } from "@/lib/reminder/notification";
 import { todayKey } from "@/lib/utils/date";
+import { useDictionary } from "@/lib/i18n/locale-provider";
 
 const POLL_INTERVAL_MS = 20_000;
 
@@ -16,6 +17,7 @@ const POLL_INTERVAL_MS = 20_000;
  * fire again on the next poll or from another open tab.
  */
 export function useNotifications() {
+  const dict = useDictionary();
   const firingRef = useRef(new Set<string>());
 
   useEffect(() => {
@@ -43,8 +45,8 @@ export function useNotifications() {
           if (!isDueForNotification(occ, now)) continue;
 
           firingRef.current.add(key);
-          new Notification("Rymi", {
-            body: `Đã đến lúc: ${occ.reminder.title}`,
+          new Notification(dict.notification.appName, {
+            body: dict.notification.dueNow(occ.reminder.title),
             tag: key,
           });
           await markNotified(occ.reminder.id);
@@ -59,5 +61,5 @@ export function useNotifications() {
       cancelled = true;
       clearInterval(interval);
     };
-  }, []);
+  }, [dict]);
 }

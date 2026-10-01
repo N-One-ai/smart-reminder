@@ -17,12 +17,27 @@ import { cn } from "@/lib/utils";
 import { completeOccurrence, deleteReminder } from "@/lib/reminder/actions";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
 import { useDictionary } from "@/lib/i18n/locale-provider";
+import { formatDayLabel } from "@/lib/utils/date";
 
-export function ReminderListItem({ occurrence }: { occurrence: ReminderOccurrence }) {
+export function ReminderListItem({
+  occurrence,
+  showDate = false,
+}: {
+  occurrence: ReminderOccurrence;
+  /** Shows a smart relative-day label ("Ngày mai", "Thứ Bảy", "05/10") ahead
+   * of the time — for lists that mix multiple days (Upcoming, Completed).
+   * Omitted inside a single day's own section (e.g. "Hôm nay"), where the
+   * section heading already establishes the day and repeating it on every
+   * row would be redundant. */
+  showDate?: boolean;
+}) {
   const router = useRouter();
   const dict = useDictionary();
   const [isPending, startTransition] = useTransition();
   const { reminder, occurrenceDate, isCompleted } = occurrence;
+  const dateTimeLabel = showDate
+    ? `${formatDayLabel(dict, occurrenceDate)} · ${reminder.time}`
+    : reminder.time;
 
   function handleToggleComplete() {
     startTransition(async () => {
@@ -70,17 +85,18 @@ export function ReminderListItem({ occurrence }: { occurrence: ReminderOccurrenc
         aria-label={dict.reminderList.markComplete(reminder.title)}
       />
 
-      {/* Time leads (priority 1), title follows (priority 2) — weight/size does
-          the hierarchy work instead of a colored badge, per "tối giản, ít
-          background" — status (priority 3) is the checkbox/strikethrough
+      {/* Title leads (priority 1) — bolder weight carries the hierarchy
+          instead of a colored badge, per "tối giản, ít background". Date/time
+          (priority 2) stays compact and muted so it reads as context, not
+          the headline — status (priority 3) is the checkbox/strikethrough
           above, recurrence (priority 4) is the smallest, last element. */}
-      <Link href={`/app/reminder/${reminder.id}`} className="flex-1 min-w-0 flex items-center gap-3.5">
-        <span className="text-sm font-bold tabular-nums text-foreground shrink-0 w-11">
-          {reminder.time}
+      <Link href={`/app/reminder/${reminder.id}`} className="flex-1 min-w-0 flex items-center gap-3">
+        <span className="text-xs font-medium tabular-nums text-muted-foreground shrink-0">
+          {dateTimeLabel}
         </span>
         <span
           className={cn(
-            "flex-1 min-w-0 text-sm font-medium truncate",
+            "flex-1 min-w-0 text-sm font-semibold truncate",
             isCompleted && "line-through text-muted-foreground"
           )}
         >

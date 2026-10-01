@@ -27,7 +27,7 @@ export function CompletedView({ reminders }: { reminders: Reminder[] }) {
       ) : (
         <div className="flex flex-col gap-2">
           {occurrences.map((occ) => (
-            <ReminderListItem key={occ.reminder.id} occurrence={occ} />
+            <ReminderListItem key={occ.reminder.id} occurrence={occ} showDate />
           ))}
         </div>
       )}

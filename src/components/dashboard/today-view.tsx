@@ -83,7 +83,11 @@ export function TodayView({
           <DayGroupHeader label={dict.dashboard.upcomingTitle} />
           <div className="flex flex-col gap-2">
             {upcomingPreview.map((occ) => (
-              <ReminderListItem key={`${occ.reminder.id}-${occ.occurrenceDate}`} occurrence={occ} />
+              <ReminderListItem
+                key={`${occ.reminder.id}-${occ.occurrenceDate}`}
+                occurrence={occ}
+                showDate
+              />
             ))}
           </div>
         </div>

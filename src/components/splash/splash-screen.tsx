@@ -62,12 +62,12 @@ export function SplashScreen() {
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-[#0B0B0D] transition-opacity duration-[250ms] ease-out",
+        "fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-white transition-opacity duration-[250ms] ease-out",
         exiting ? "opacity-0" : "opacity-100"
       )}
     >
-      <RymiLogo className="h-14 w-auto text-primary animate-in fade-in zoom-in-95 duration-500 ease-out" />
-      <p className="text-white/50 text-xs animate-in fade-in duration-500 delay-100 fill-mode-both">
+      <RymiLogo className="h-14 w-auto text-black animate-in fade-in zoom-in-95 duration-500 ease-out" />
+      <p className="text-black/50 text-xs animate-in fade-in duration-500 delay-100 fill-mode-both">
         {dict.splash.tagline}
       </p>
     </div>

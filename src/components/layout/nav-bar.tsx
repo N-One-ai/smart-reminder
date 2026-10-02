@@ -4,17 +4,23 @@ import { usePathname } from "next/navigation";
 import { CalendarCheck, CalendarClock, CheckCircle2, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDictionary } from "@/lib/i18n/locale-provider";
+import { useUnreadMessages } from "@/lib/chat/unread-context";
 import { RymiLogo } from "./rymi-logo";
 
 export function NavBar({ pendingConnectionCount = 0 }: { pendingConnectionCount?: number }) {
   const pathname = usePathname();
   const dict = useDictionary();
+  // Same badge slot as pending connection requests — a single combined
+  // number for "things needing attention in Kết nối", not two separate
+  // indicators crowding one icon.
+  const { total: unreadMessageCount } = useUnreadMessages();
+  const connectionsBadge = pendingConnectionCount + unreadMessageCount;
 
   const NAV_ITEMS = [
     { href: "/app", label: dict.nav.today, icon: CalendarCheck, badge: 0 },
     { href: "/app/upcoming", label: dict.nav.upcoming, icon: CalendarClock, badge: 0 },
     { href: "/app/completed", label: dict.nav.completed, icon: CheckCircle2, badge: 0 },
-    { href: "/app/connections", label: dict.nav.connections, icon: Users, badge: pendingConnectionCount },
+    { href: "/app/connections", label: dict.nav.connections, icon: Users, badge: connectionsBadge },
     { href: "/settings", label: dict.nav.settings, icon: Settings, badge: 0 },
   ] as const;
 
@@ -80,7 +86,7 @@ export function NavBar({ pendingConnectionCount = 0 }: { pendingConnectionCount?
               <span className="flex-1">{label}</span>
               {badge > 0 && (
                 <span className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-destructive text-[10px] font-semibold text-white">
-                  {badge}
+                  {badge > 9 ? "9+" : badge}
                 </span>
               )}
             </a>

@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { sendMessage, markConversationRead } from "@/lib/chat/actions";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
 import { useDictionary } from "@/lib/i18n/locale-provider";
+import { useUnreadMessages } from "@/lib/chat/unread-context";
 import type { Database } from "@/types/database";
 import type { ChatMessage } from "@/types/chat";
 import type { PublicProfile } from "@/types/profile";
@@ -34,6 +35,7 @@ export function ChatScreen({
 }) {
   const dict = useDictionary();
   const router = useRouter();
+  const { clearUnread, setActiveConversation } = useUnreadMessages();
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -43,6 +45,10 @@ export function ChatScreen({
 
   useEffect(() => {
     markConversationRead(conversationId).catch(() => {});
+    clearUnread(conversationId);
+    setActiveConversation(conversationId);
+    return () => setActiveConversation(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clearUnread/setActiveConversation are stable (useCallback), re-running only on a real conversation change is intended
   }, [conversationId]);
 
   useEffect(() => {
@@ -73,6 +79,7 @@ export function ChatScreen({
           });
           if (row.sender_id !== currentUserId) {
             markConversationRead(conversationId).catch(() => {});
+            clearUnread(conversationId);
           }
         }
       )

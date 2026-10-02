@@ -4,10 +4,12 @@ export function EmptyState({
   icon: Icon,
   title,
   description,
+  action,
 }: {
   icon: LucideIcon;
   title: string;
   description?: string;
+  action?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
@@ -18,6 +20,7 @@ export function EmptyState({
         <p className="text-sm font-medium">{title}</p>
         {description && <p className="text-xs text-muted-foreground max-w-xs">{description}</p>}
       </div>
+      {action}
     </div>
   );
 }

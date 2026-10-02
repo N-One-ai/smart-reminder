@@ -1,20 +1,21 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { CalendarCheck, CalendarClock, CheckCircle2, Settings } from "lucide-react";
+import { CalendarCheck, CalendarClock, CheckCircle2, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDictionary } from "@/lib/i18n/locale-provider";
 import { RymiLogo } from "./rymi-logo";
 
-export function NavBar() {
+export function NavBar({ pendingConnectionCount = 0 }: { pendingConnectionCount?: number }) {
   const pathname = usePathname();
   const dict = useDictionary();
 
   const NAV_ITEMS = [
-    { href: "/app", label: dict.nav.today, icon: CalendarCheck },
-    { href: "/app/upcoming", label: dict.nav.upcoming, icon: CalendarClock },
-    { href: "/app/completed", label: dict.nav.completed, icon: CheckCircle2 },
-    { href: "/settings", label: dict.nav.settings, icon: Settings },
+    { href: "/app", label: dict.nav.today, icon: CalendarCheck, badge: 0 },
+    { href: "/app/upcoming", label: dict.nav.upcoming, icon: CalendarClock, badge: 0 },
+    { href: "/app/completed", label: dict.nav.completed, icon: CheckCircle2, badge: 0 },
+    { href: "/app/connections", label: dict.nav.connections, icon: Users, badge: pendingConnectionCount },
+    { href: "/settings", label: dict.nav.settings, icon: Settings, badge: 0 },
   ] as const;
 
   // Plain <a> tags (full page navigation), not next/link — the reminder list
@@ -28,16 +29,16 @@ export function NavBar() {
     <>
       {/* Mobile: floating bottom tab bar — icon-only, no label/no active shape (2-tone identity via icon color alone) */}
       <nav className="sm:hidden fixed bottom-3 inset-x-3 z-40 rounded-3xl bg-sidebar shadow-lg shadow-black/20 px-2 py-2">
-        <ul className="grid grid-cols-4">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        <ul className="grid grid-cols-5">
+          {NAV_ITEMS.map(({ href, label, icon: Icon, badge }) => {
             const active = pathname === href;
             return (
               <li key={href} className="flex justify-center">
                 <a
                   href={href}
-                  aria-label={label}
+                  aria-label={badge > 0 ? `${label} (${badge})` : label}
                   aria-current={active ? "page" : undefined}
-                  className="flex items-center justify-center size-11"
+                  className="relative flex items-center justify-center size-11"
                 >
                   <Icon
                     className={cn(
@@ -46,6 +47,9 @@ export function NavBar() {
                     )}
                     strokeWidth={active ? 2.5 : 2}
                   />
+                  {badge > 0 && (
+                    <span className="absolute top-1.5 right-1.5 flex size-2 rounded-full bg-destructive" />
+                  )}
                 </a>
               </li>
             );
@@ -58,7 +62,7 @@ export function NavBar() {
         <a href="/app" aria-label="Rymi" className="px-3 pb-8 flex items-center text-white">
           <RymiLogo className="h-6 w-auto" />
         </a>
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {NAV_ITEMS.map(({ href, label, icon: Icon, badge }) => {
           const active = pathname === href;
           return (
             <a
@@ -73,7 +77,12 @@ export function NavBar() {
               )}
             >
               <Icon className="size-4.5" strokeWidth={active ? 2.5 : 2} />
-              {label}
+              <span className="flex-1">{label}</span>
+              {badge > 0 && (
+                <span className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-destructive text-[10px] font-semibold text-white">
+                  {badge}
+                </span>
+              )}
             </a>
           );
         })}

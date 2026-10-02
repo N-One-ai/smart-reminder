@@ -3,13 +3,14 @@ import { AppHeader } from "./app-header";
 import { NotificationScheduler } from "./notification-scheduler";
 import { NotificationPermissionBanner } from "./notification-permission-banner";
 import { getCurrentUser } from "@/lib/reminder/queries";
+import { getPendingRequestCount } from "@/lib/connections/queries";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUser();
+  const [user, pendingConnectionCount] = await Promise.all([getCurrentUser(), getPendingRequestCount()]);
 
   return (
     <div className="flex min-h-svh flex-col sm:flex-row">
-      <NavBar />
+      <NavBar pendingConnectionCount={pendingConnectionCount} />
       <div className="flex-1 flex flex-col min-w-0">
         <AppHeader
           name={user?.name || user?.email || "?"}

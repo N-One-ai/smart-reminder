@@ -26,6 +26,7 @@ export default async function SettingsPage() {
         initialName={user?.name ?? ""}
         email={user?.email ?? ""}
         initialTimezone={user?.timezone ?? "Asia/Ho_Chi_Minh"}
+        initialUsername={user?.username ?? null}
       />
 
       <Separator />

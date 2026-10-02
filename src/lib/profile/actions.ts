@@ -8,6 +8,9 @@ import type { Profile } from "@/types/profile";
 
 const MAX_AVATAR_FILE_BYTES = 8 * 1024 * 1024;
 
+/** Must match the `profiles_username_format` check constraint in the DB. */
+const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/;
+
 export async function updateProfile(input: {
   name?: string;
   timezone?: string;
@@ -43,8 +46,45 @@ export async function updateProfile(input: {
     email: data.email,
     timezone: data.timezone,
     avatar_url: data.avatar_url,
+    username: data.username,
     created_at: data.created_at,
   });
+}
+
+/**
+ * Separate from updateProfile — username has its own validation shape and a
+ * uniqueness conflict is a normal, expected outcome (not a generic DB_ERROR),
+ * so it needs its own distinct error code the UI can branch on.
+ */
+export async function updateUsername(rawUsername: string): Promise<ActionResult<{ username: string }>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return err("UNAUTHORIZED", "Bạn cần đăng nhập");
+
+  const username = rawUsername.trim().toLowerCase();
+  if (!USERNAME_PATTERN.test(username)) {
+    return err(
+      "INVALID_USERNAME",
+      "Username phải dài 3-20 ký tự, chỉ gồm chữ thường, số và dấu gạch dưới."
+    );
+  }
+
+  const { error } = await supabase.from("profiles").update({ username }).eq("id", user.id);
+
+  if (error) {
+    // Postgres unique_violation
+    if (error.code === "23505") {
+      return err("USERNAME_TAKEN", "Username này đã có người dùng. Hãy chọn username khác.");
+    }
+    console.error("[updateUsername]", error);
+    return err("DB_ERROR", "Không thể lưu username. Vui lòng thử lại.");
+  }
+
+  revalidatePath("/settings");
+  revalidatePath("/app/connections");
+  return ok({ username });
 }
 
 /**

@@ -102,5 +102,6 @@ export async function getCurrentUser() {
     name: profile?.name ?? "",
     timezone: profile?.timezone ?? "Asia/Ho_Chi_Minh",
     avatarUrl: profile?.avatar_url ?? null,
+    username: profile?.username ?? null,
   };
 }

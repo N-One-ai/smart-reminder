@@ -13,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateProfile } from "@/lib/profile/actions";
+import { Loader2 } from "lucide-react";
+import { updateProfile, updateUsername } from "@/lib/profile/actions";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
 import {
   TALL_INPUT_CLASS,
@@ -52,10 +53,12 @@ export function SettingsForm({
   initialName,
   email,
   initialTimezone,
+  initialUsername,
 }: {
   initialName: string;
   email: string;
   initialTimezone: string;
+  initialUsername: string | null;
 }) {
   const router = useRouter();
   const dict = useDictionary();
@@ -64,6 +67,8 @@ export function SettingsForm({
   const [timezone, setTimezone] = useState(initialTimezone);
   const [detected, setDetected] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [username, setUsername] = useState(initialUsername ?? "");
+  const [usernameSaving, setUsernameSaving] = useState(false);
 
   // Auto-detect timezone on first load, but only offer it as a suggestion —
   // never silently override a value the user (or their stored profile) already
@@ -106,6 +111,25 @@ export function SettingsForm({
     router.refresh();
   }
 
+  async function handleSaveUsername(e: React.FormEvent) {
+    e.preventDefault();
+    setUsernameSaving(true);
+    try {
+      const result = await updateUsername(username);
+      if (!result.ok) {
+        toast.error(result.error.message);
+        return;
+      }
+      setUsername(result.data.username);
+      toast.success(dict.toasts.settingsSaved);
+      router.refresh();
+    } catch {
+      toast.error(NETWORK_ERROR_MESSAGE);
+    } finally {
+      setUsernameSaving(false);
+    }
+  }
+
   return (
     <form onSubmit={handleSave} className="rounded-xl border bg-card p-5 flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
@@ -121,6 +145,31 @@ export function SettingsForm({
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">{dict.settings.email}</Label>
         <Input id="email" value={email} disabled className={TALL_INPUT_CLASS} />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="username">{dict.connections.usernameLabel}</Label>
+        <div className="flex items-center gap-2">
+          <Input
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.toLowerCase())}
+            placeholder={dict.connections.usernamePlaceholder}
+            maxLength={20}
+            className={TALL_INPUT_CLASS}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={usernameSaving || username.trim() === (initialUsername ?? "")}
+            onClick={handleSaveUsername}
+            className={cn("shrink-0", TALL_PILL_BUTTON_CLASS)}
+          >
+            {usernameSaving && <Loader2 className="size-4 animate-spin" />}
+            {dict.reminderForm.save}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">{dict.connections.usernameHint}</p>
       </div>
 
       <div className="flex flex-col gap-1.5">

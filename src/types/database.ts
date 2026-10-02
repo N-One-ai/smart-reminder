@@ -12,6 +12,7 @@ export interface Database {
           email: string;
           timezone: string;
           avatar_url: string | null;
+          username: string | null;
           created_at: string;
         };
         Insert: {
@@ -20,6 +21,7 @@ export interface Database {
           email: string;
           timezone?: string;
           avatar_url?: string | null;
+          username?: string | null;
           created_at?: string;
         };
         Update: {
@@ -28,7 +30,35 @@ export interface Database {
           email?: string;
           timezone?: string;
           avatar_url?: string | null;
+          username?: string | null;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      connections: {
+        Row: {
+          id: string;
+          requester_id: string;
+          receiver_id: string;
+          status: ConnectionStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          requester_id: string;
+          receiver_id: string;
+          status?: ConnectionStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          requester_id?: string;
+          receiver_id?: string;
+          status?: ConnectionStatus;
+          created_at?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -120,10 +150,27 @@ export interface Database {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Views: {
+      profiles_public: {
+        Row: {
+          id: string;
+          name: string | null;
+          username: string | null;
+          avatar_url: string | null;
+        };
+        Relationships: [];
+      };
+    };
+    Functions: {
+      send_connection_request: {
+        Args: { target_user_id: string };
+        Returns: Database["public"]["Tables"]["connections"]["Row"];
+      };
+    };
   };
 }
+
+export type ConnectionStatus = "pending" | "accepted" | "rejected";
 
 interface RecurrenceRuleJson {
   frequency: "daily" | "weekly" | "monthly" | "yearly";

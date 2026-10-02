@@ -122,6 +122,72 @@ export interface Database {
         };
         Relationships: [];
       };
+      conversations: {
+        Row: {
+          id: string;
+          user_a_id: string;
+          user_b_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_a_id: string;
+          user_b_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_a_id?: string;
+          user_b_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      conversation_members: {
+        Row: {
+          conversation_id: string;
+          user_id: string;
+          last_read_at: string;
+          created_at: string;
+        };
+        Insert: {
+          conversation_id: string;
+          user_id: string;
+          last_read_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          conversation_id?: string;
+          user_id?: string;
+          last_read_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      messages: {
+        Row: {
+          id: string;
+          conversation_id: string;
+          sender_id: string;
+          content: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          conversation_id: string;
+          sender_id: string;
+          content: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          conversation_id?: string;
+          sender_id?: string;
+          content?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       push_subscriptions: {
         Row: {
           id: string;
@@ -160,11 +226,22 @@ export interface Database {
         };
         Relationships: [];
       };
+      unread_message_counts: {
+        Row: {
+          conversation_id: string;
+          unread_count: number;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       send_connection_request: {
         Args: { target_user_id: string };
         Returns: Database["public"]["Tables"]["connections"]["Row"];
+      };
+      get_or_create_conversation: {
+        Args: { other_user_id: string };
+        Returns: string;
       };
     };
   };

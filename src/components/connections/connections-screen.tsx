@@ -14,10 +14,12 @@ export function ConnectionsScreen({
   currentUserId,
   incomingRequests,
   connections,
+  unreadByUserId,
 }: {
   currentUserId: string;
   incomingRequests: ConnectionWithProfile[];
   connections: ConnectionWithProfile[];
+  unreadByUserId: Record<string, number>;
 }) {
   const dict = useDictionary();
   const router = useRouter();
@@ -74,7 +76,12 @@ export function ConnectionsScreen({
         ) : (
           <div className="flex flex-col gap-2">
             {connections.map((conn) => (
-              <ConnectionRow key={conn.id} connection={conn} onChanged={refresh} />
+              <ConnectionRow
+                key={conn.id}
+                connection={conn}
+                unreadCount={unreadByUserId[conn.otherUser.id] ?? 0}
+                onChanged={refresh}
+              />
             ))}
           </div>
         )}

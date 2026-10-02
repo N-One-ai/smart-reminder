@@ -136,6 +136,10 @@ export async function getConversationDetail(conversationId: string): Promise<Con
       conversationId: m.conversation_id,
       senderId: m.sender_id,
       content: m.content,
+      attachmentType: m.attachment_type,
+      attachmentPath: m.attachment_path,
+      attachmentMimeType: m.attachment_mime_type,
+      attachmentSize: m.attachment_size,
       createdAt: m.created_at,
     })),
   };

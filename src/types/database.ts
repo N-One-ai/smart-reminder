@@ -169,21 +169,33 @@ export interface Database {
           id: string;
           conversation_id: string;
           sender_id: string;
-          content: string;
+          content: string | null;
+          attachment_type: AttachmentType | null;
+          attachment_path: string | null;
+          attachment_mime_type: string | null;
+          attachment_size: number | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           conversation_id: string;
           sender_id: string;
-          content: string;
+          content?: string | null;
+          attachment_type?: AttachmentType | null;
+          attachment_path?: string | null;
+          attachment_mime_type?: string | null;
+          attachment_size?: number | null;
           created_at?: string;
         };
         Update: {
           id?: string;
           conversation_id?: string;
           sender_id?: string;
-          content?: string;
+          content?: string | null;
+          attachment_type?: AttachmentType | null;
+          attachment_path?: string | null;
+          attachment_mime_type?: string | null;
+          attachment_size?: number | null;
           created_at?: string;
         };
         Relationships: [];
@@ -248,6 +260,7 @@ export interface Database {
 }
 
 export type ConnectionStatus = "pending" | "accepted" | "rejected";
+export type AttachmentType = "image";
 
 interface RecurrenceRuleJson {
   frequency: "daily" | "weekly" | "monthly" | "yearly";

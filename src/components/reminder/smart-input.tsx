@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Loader2, Mic, PencilLine, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import type { AIParseResult } from "@/types/ai";
+import type { PublicProfile } from "@/types/profile";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ReminderPreviewCard } from "./reminder-preview-card";
@@ -13,8 +14,10 @@ import { ReminderEditForm, type ReminderEditValues } from "./reminder-edit-form"
 import { SmartSuggestionList } from "./smart-suggestion-list";
 import { VoiceInputScreen } from "./voice-input-screen";
 import { ImageScanScreen } from "./image-scan-screen";
+import { MentionPicker } from "./mention-picker";
 import { parseReminderText, parseReminderImage } from "@/lib/ai/actions";
 import { createReminder } from "@/lib/reminder/actions";
+import { getMyConnections } from "@/lib/connections/actions";
 import { buildAIContext } from "@/lib/utils/date";
 import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
 import { useDictionary } from "@/lib/i18n/locale-provider";
@@ -49,11 +52,126 @@ export function SmartInput() {
   // falling back to text-only parsing and losing everything the image showed.
   const [imageContext, setImageContext] = useState<{ base64: string; mimeType: string } | null>(null);
 
+  // @mention — resolves to a real Connection's profile UUID at SELECTION
+  // time (from getMyConnections(), the same accepted-connections read
+  // ReminderEditForm's picker uses), never trusted from parsed text or AI
+  // output. MVP supports exactly one recipient, so once mentionedUser is
+  // set, typing another "@" never reopens the picker (see
+  // handleTextareaChange). The database trigger from migration 0009 is
+  // still the actual authorization boundary for the resulting
+  // shared_with_user_id — this only decides what UUID gets *offered*.
+  const [mentionedUser, setMentionedUser] = useState<PublicProfile | null>(null);
+  // Exact "@Name" substring inserted into inputText for the current
+  // mentionedUser — used both to strip it out before sending text to the AI
+  // parser, and to detect the user backspacing over the mention (if the
+  // text no longer contains this substring, the mention is cleared).
+  const [mentionRaw, setMentionRaw] = useState<string | null>(null);
+  // Non-null while the popup is open; its value is whatever's typed after
+  // "@" so far, used to filter the connections list.
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionTriggerStart, setMentionTriggerStart] = useState<number | null>(null);
+  const [mentionActiveIndex, setMentionActiveIndex] = useState(0);
+  const [connections, setConnections] = useState<PublicProfile[] | null>(null);
+  const loadingConnections = mentionQuery !== null && connections === null;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const filteredConnections = (connections ?? []).filter((c) => {
+    if (!mentionQuery) return true;
+    const q = mentionQuery.toLowerCase();
+    return (c.name ?? "").toLowerCase().includes(q) || (c.username ?? "").toLowerCase().includes(q);
+  });
+
   useEffect(() => {
     const Ctor = window.SpeechRecognition ?? window.webkitSpeechRecognition;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing with browser-only SpeechRecognition API, see use-speech-recognition.ts
     setMicSupported(!!Ctor);
   }, []);
+
+  useEffect(() => {
+    if (mentionQuery === null || connections !== null) return;
+    getMyConnections()
+      .then((res) => {
+        if (!res.ok) {
+          toast.error(res.error.message);
+          setConnections([]);
+          return;
+        }
+        setConnections(res.data.map((c) => c.otherUser));
+      })
+      .catch(() => {
+        toast.error(NETWORK_ERROR_MESSAGE);
+        setConnections([]);
+      });
+  }, [mentionQuery, connections]);
+
+  /** Strips the mentioned person's literal "@Name" text out of what gets
+   * sent to the AI parser — the title/date/time parse should never see it,
+   * since it's not natural-language content, it's a UI selection. */
+  function textForParsing(text: string): string {
+    if (!mentionRaw) return text;
+    return text.replace(mentionRaw, "").replace(/\s{2,}/g, " ").trim();
+  }
+
+  function handleTextareaChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const value = e.target.value;
+    setInputText(value);
+
+    let hasMention = mentionedUser !== null;
+    if (hasMention && mentionRaw && !value.includes(mentionRaw)) {
+      setMentionedUser(null);
+      setMentionRaw(null);
+      hasMention = false;
+    }
+
+    if (hasMention) {
+      // Exactly one recipient for the MVP — never reopen the picker once
+      // someone is already selected.
+      setMentionQuery(null);
+      return;
+    }
+
+    const cursor = e.target.selectionStart ?? value.length;
+    const upToCursor = value.slice(0, cursor);
+    const match = /@([^\s@]*)$/.exec(upToCursor);
+    if (match) {
+      setMentionTriggerStart(cursor - match[0].length);
+      setMentionQuery(match[1]);
+      setMentionActiveIndex(0);
+    } else {
+      setMentionQuery(null);
+    }
+  }
+
+  function handleSelectMention(person: PublicProfile) {
+    if (mentionTriggerStart === null) return;
+    const cursor = textareaRef.current?.selectionStart ?? inputText.length;
+    const before = inputText.slice(0, mentionTriggerStart);
+    const after = inputText.slice(cursor);
+    const raw = `@${person.name}`;
+    const next = `${before}${raw} ${after}`;
+
+    setInputText(next);
+    setMentionedUser(person);
+    setMentionRaw(raw);
+    setMentionQuery(null);
+    setMentionTriggerStart(null);
+
+    requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      const pos = before.length + raw.length + 1;
+      el.focus();
+      el.setSelectionRange(pos, pos);
+    });
+  }
+
+  function handleRemoveMention() {
+    if (mentionRaw) {
+      setInputText(inputText.replace(mentionRaw, "").replace(/\s{2,}/g, " ").trim());
+    }
+    setMentionedUser(null);
+    setMentionRaw(null);
+  }
 
   async function runParse(text: string) {
     setMode("parsing");
@@ -106,8 +224,9 @@ export function SmartInput() {
     e.preventDefault();
     if (!inputText.trim()) return;
     setImageContext(null);
-    setCombinedText(inputText.trim());
-    runParse(inputText.trim());
+    const stripped = textForParsing(inputText.trim());
+    setCombinedText(stripped);
+    runParse(stripped);
   }
 
   function handleClarificationAnswer(answer: string) {
@@ -128,6 +247,10 @@ export function SmartInput() {
     setMode("idle");
     setIsSaving(false);
     setImageContext(null);
+    setMentionedUser(null);
+    setMentionRaw(null);
+    setMentionQuery(null);
+    setMentionTriggerStart(null);
   }
 
   async function persist(input: {
@@ -140,6 +263,7 @@ export function SmartInput() {
     source: "ai" | "manual";
     ai_confidence: number | null;
     suggestions?: string[];
+    shared_with_user_id?: string | null;
   }) {
     setIsSaving(true);
     try {
@@ -186,6 +310,7 @@ export function SmartInput() {
       source: "ai",
       ai_confidence: result.confidence,
       suggestions: result.suggestions,
+      shared_with_user_id: mentionedUser?.id ?? null,
     });
   }
 
@@ -199,6 +324,7 @@ export function SmartInput() {
       recurrence: values.recurrence,
       source: "manual",
       ai_confidence: null,
+      shared_with_user_id: values.sharedWithUserId,
     });
   }
 
@@ -239,14 +365,49 @@ export function SmartInput() {
 
           <form onSubmit={handleSubmit} className="relative">
             <Textarea
+              ref={textareaRef}
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={handleTextareaChange}
               placeholder={dict.smartInput.placeholder}
               rows={3}
               maxLength={500}
               className="resize-none text-base pr-12 border-none bg-muted focus-visible:ring-2"
               disabled={mode === "parsing"}
+              onBlur={() => {
+                // Give MentionPicker's onMouseDown a chance to run its
+                // selection first — otherwise blur would close the popup
+                // before the click/tap is handled.
+                window.setTimeout(() => setMentionQuery(null), 100);
+              }}
               onKeyDown={(e) => {
+                if (mentionQuery !== null) {
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    if (filteredConnections.length > 0) {
+                      setMentionActiveIndex((i) => (i + 1) % filteredConnections.length);
+                    }
+                    return;
+                  }
+                  if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    if (filteredConnections.length > 0) {
+                      setMentionActiveIndex((i) => (i - 1 + filteredConnections.length) % filteredConnections.length);
+                    }
+                    return;
+                  }
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (filteredConnections[mentionActiveIndex]) {
+                      handleSelectMention(filteredConnections[mentionActiveIndex]);
+                    }
+                    return;
+                  }
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    setMentionQuery(null);
+                    return;
+                  }
+                }
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   handleSubmit(e);
@@ -266,7 +427,31 @@ export function SmartInput() {
                 <Sparkles className="size-4" />
               )}
             </Button>
+
+            {mentionQuery !== null && (
+              <MentionPicker
+                items={filteredConnections}
+                loading={loadingConnections}
+                activeIndex={mentionActiveIndex}
+                onSelect={handleSelectMention}
+              />
+            )}
           </form>
+
+          {mentionedUser && (
+            <div className="flex items-center gap-2 rounded-full border border-input bg-background pl-1 pr-2 py-1 w-fit">
+              <span className="text-xs text-muted-foreground pl-1">{dict.reminderForm.shareWith}:</span>
+              <span className="text-sm font-medium truncate max-w-32">{mentionedUser.name || "?"}</span>
+              <button
+                type="button"
+                onClick={handleRemoveMention}
+                aria-label={dict.reminderForm.removeShare}
+                className="flex size-5 items-center justify-center rounded-full hover:bg-muted text-muted-foreground shrink-0"
+              >
+                ×
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -304,6 +489,7 @@ export function SmartInput() {
           saving={isSaving}
           onConfirm={handleConfirm}
           onEdit={() => setMode("editing")}
+          sharedWithUser={mentionedUser}
         />
       )}
 
@@ -316,6 +502,8 @@ export function SmartInput() {
               date: result.date ?? "",
               time: result.time ?? "",
               recurrence: result.recurrence,
+              sharedWithUserId: mentionedUser?.id ?? null,
+              sharedWithUser: mentionedUser,
             }}
             saving={isSaving}
             onSave={handleEditSave}

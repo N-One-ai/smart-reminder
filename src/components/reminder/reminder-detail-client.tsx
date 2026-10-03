@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, Pencil, Repeat, Trash2, CheckCircle2, ArrowLeft, Sparkles } from "lucide-react";
+import { Calendar, Clock, Pencil, Repeat, Trash2, CheckCircle2, ArrowLeft, Sparkles, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
@@ -37,6 +38,11 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
   const isCompleted = reminder.repeat_rule
     ? reminder.last_completed_date === today
     : reminder.status === "completed";
+  // Resolved server-side in lib/reminder/queries.ts from the viewer's own
+  // session — never trust a client-computed "am I the owner" check for
+  // anything beyond UI display (the actual enforcement is the reminders
+  // RLS policy + the .eq("user_id", ...) on every mutating action).
+  const isReadOnly = reminder.isSharedWithMe === true;
 
   function handleSave(values: ReminderEditValues) {
     startTransition(async () => {
@@ -48,6 +54,7 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
           time: values.time,
           timezone: reminder.timezone,
           recurrence: values.recurrence,
+          shared_with_user_id: values.sharedWithUserId,
         });
         if (!result.ok) {
           toast.error(result.error.message);
@@ -77,6 +84,11 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
           time: values.time,
           timezone: reminder.timezone,
           recurrence: values.recurrence,
+          // Quick-edit never touches sharing — pass the existing value
+          // through explicitly (the update schema's shared_with_user_id
+          // field defaults to null when omitted, same as description
+          // above; omitting it here would silently un-share the reminder).
+          shared_with_user_id: reminder.shared_with_user_id,
         });
         if (!result.ok) {
           toast.error(result.error.message);
@@ -142,6 +154,8 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
               date: reminder.date,
               time: reminder.time,
               recurrence: reminder.repeat_rule,
+              sharedWithUserId: reminder.shared_with_user_id,
+              sharedWithUser: reminder.sharedWithUser,
             }}
             saving={isPending}
             onSave={handleSave}
@@ -162,6 +176,29 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
           >
             {reminder.title}
           </h1>
+
+          {reminder.sharedWithUser && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Avatar size="sm">
+                {reminder.sharedWithUser.avatar_url && (
+                  <AvatarImage src={reminder.sharedWithUser.avatar_url} alt={reminder.sharedWithUser.name} />
+                )}
+                <AvatarFallback>
+                  {(reminder.sharedWithUser.name || reminder.sharedWithUser.username || "?").charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="flex items-center gap-1">
+                <Link2 className="size-3.5" />
+                {dict.reminderDetail.sharedWith(reminder.sharedWithUser.name || "?")}
+              </span>
+            </div>
+          )}
+
+          {isReadOnly && (
+            <p className="text-xs text-muted-foreground bg-muted rounded-lg px-3 py-2">
+              {dict.reminderDetail.sharedReadOnlyNotice}
+            </p>
+          )}
 
           <div className="flex flex-col gap-3 text-sm">
             <div className="flex items-center gap-2.5 text-muted-foreground">
@@ -199,63 +236,67 @@ export function ReminderDetailClient({ reminder }: { reminder: Reminder }) {
             <p className="text-sm text-muted-foreground">{reminder.description || "—"}</p>
           </div>
 
-          <Separator />
+          {!isReadOnly && (
+            <>
+              <Separator />
 
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setQuickEditing(true)}
-              disabled={isPending}
-              className="flex-1"
-            >
-              <Sparkles className="size-4" />
-              {dict.reminderDetail.quickEdit}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setEditing(true)}
-              disabled={isPending}
-              className="flex-1"
-            >
-              <Pencil className="size-4" />
-              {dict.reminderDetail.edit}
-            </Button>
-            <Button
-              variant={isCompleted ? "outline" : "default"}
-              onClick={handleComplete}
-              disabled={isPending}
-              className="flex-1"
-            >
-              <CheckCircle2 className="size-4" />
-              {isCompleted ? dict.reminderDetail.markUndone : dict.reminderDetail.markDone}
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
+                  onClick={() => setQuickEditing(true)}
                   disabled={isPending}
-                  className="flex-1 text-destructive hover:text-destructive"
+                  className="flex-1"
                 >
-                  <Trash2 className="size-4" />
-                  {dict.reminderDetail.delete}
+                  <Sparkles className="size-4" />
+                  {dict.reminderDetail.quickEdit}
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{dict.reminderDetail.deleteConfirmTitle}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {reminder.repeat_rule
-                      ? dict.reminderDetail.deleteConfirmRecurring
-                      : dict.reminderDetail.deleteConfirmOnce}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{dict.common.cancel}</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>{dict.reminderDetail.delete}</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditing(true)}
+                  disabled={isPending}
+                  className="flex-1"
+                >
+                  <Pencil className="size-4" />
+                  {dict.reminderDetail.edit}
+                </Button>
+                <Button
+                  variant={isCompleted ? "outline" : "default"}
+                  onClick={handleComplete}
+                  disabled={isPending}
+                  className="flex-1"
+                >
+                  <CheckCircle2 className="size-4" />
+                  {isCompleted ? dict.reminderDetail.markUndone : dict.reminderDetail.markDone}
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      disabled={isPending}
+                      className="flex-1 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="size-4" />
+                      {dict.reminderDetail.delete}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{dict.reminderDetail.deleteConfirmTitle}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {reminder.repeat_rule
+                          ? dict.reminderDetail.deleteConfirmRecurring
+                          : dict.reminderDetail.deleteConfirmOnce}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{dict.common.cancel}</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete}>{dict.reminderDetail.delete}</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

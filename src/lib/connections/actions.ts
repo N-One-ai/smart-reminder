@@ -4,10 +4,29 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { ok, err, type ActionResult } from "@/lib/action-result";
 import type { ConnectionStatus, Database } from "@/types/database";
-import type { UserSearchResult } from "@/types/connection";
+import type { ConnectionWithProfile, UserSearchResult } from "@/types/connection";
+import { getConnections } from "./queries";
 
 const GENERIC_ERROR = "Không thể thực hiện thao tác. Vui lòng thử lại.";
 const SEARCH_RESULT_LIMIT = 20;
+
+/**
+ * Thin "use server" wrapper around the plain getConnections() read, so
+ * Client Components (e.g. the reminder share picker, which has no
+ * convenient Server Component ancestor to pass this down as a prop from)
+ * can fetch the caller's own accepted Connections directly. No new query
+ * logic — reuses the exact same read already used by the Connections
+ * screen.
+ */
+export async function getMyConnections(): Promise<ActionResult<ConnectionWithProfile[]>> {
+  try {
+    const connections = await getConnections();
+    return ok(connections);
+  } catch (error) {
+    console.error("[getMyConnections]", error);
+    return err("DB_ERROR", GENERIC_ERROR);
+  }
+}
 
 /**
  * Debounced + min-length-gated on the client (see search-bar.tsx) — this is

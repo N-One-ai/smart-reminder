@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, UserPlus, X } from "lucide-react";
+import { toast } from "sonner";
 import type { RecurrenceFrequency, RecurrenceRule } from "@/types/reminder";
+import type { PublicProfile } from "@/types/profile";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -14,6 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getMyConnections } from "@/lib/connections/actions";
+import { NETWORK_ERROR_MESSAGE } from "@/lib/network-error";
 import { useDictionary } from "@/lib/i18n/locale-provider";
 
 export interface ReminderEditValues {
@@ -22,6 +28,7 @@ export interface ReminderEditValues {
   date: string; // "YYYY-MM-DD"
   time: string; // "HH:MM"
   recurrence: RecurrenceRule | null;
+  sharedWithUserId: string | null;
 }
 
 export function ReminderEditForm({
@@ -30,7 +37,7 @@ export function ReminderEditForm({
   onSave,
   onCancel,
 }: {
-  initial: ReminderEditValues;
+  initial: ReminderEditValues & { sharedWithUser?: PublicProfile | null };
   saving?: boolean;
   onSave: (values: ReminderEditValues) => void;
   onCancel: () => void;
@@ -41,6 +48,27 @@ export function ReminderEditForm({
   const [date, setDate] = useState(initial.date);
   const [time, setTime] = useState(initial.time);
   const [repeat, setRepeat] = useState<string>(initial.recurrence?.frequency ?? "none");
+  const [sharedWith, setSharedWith] = useState<PublicProfile | null>(initial.sharedWithUser ?? null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [connections, setConnections] = useState<PublicProfile[] | null>(null);
+  const loadingConnections = pickerOpen && connections === null;
+
+  useEffect(() => {
+    if (!pickerOpen || connections !== null) return;
+    getMyConnections()
+      .then((res) => {
+        if (!res.ok) {
+          toast.error(res.error.message);
+          setConnections([]);
+          return;
+        }
+        setConnections(res.data.map((c) => c.otherUser));
+      })
+      .catch(() => {
+        toast.error(NETWORK_ERROR_MESSAGE);
+        setConnections([]);
+      });
+  }, [pickerOpen, connections]);
 
   const REPEAT_OPTIONS: { value: string; label: string }[] = [
     { value: "none", label: dict.recurrence.none },
@@ -58,7 +86,14 @@ export function ReminderEditForm({
     const recurrence: RecurrenceRule | null =
       repeat === "none" ? null : { frequency: repeat as RecurrenceFrequency, interval: 1 };
 
-    onSave({ title: title.trim(), description, date, time, recurrence });
+    onSave({
+      title: title.trim(),
+      description,
+      date,
+      time,
+      recurrence,
+      sharedWithUserId: sharedWith?.id ?? null,
+    });
   }
 
   return (
@@ -114,6 +149,41 @@ export function ReminderEditForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
+        <Label>{dict.reminderForm.shareWith}</Label>
+        {sharedWith ? (
+          <div className="flex items-center gap-2 rounded-full border border-input pl-1 pr-2 py-1 w-fit">
+            <Avatar size="sm">
+              {sharedWith.avatar_url && <AvatarImage src={sharedWith.avatar_url} alt={sharedWith.name} />}
+              <AvatarFallback>{(sharedWith.name || sharedWith.username || "?").charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <span className="text-sm font-medium truncate max-w-32">{sharedWith.name || "?"}</span>
+            {sharedWith.username && (
+              <span className="text-xs text-muted-foreground truncate">@{sharedWith.username}</span>
+            )}
+            <button
+              type="button"
+              onClick={() => setSharedWith(null)}
+              aria-label={dict.reminderForm.removeShare}
+              className="flex size-5 items-center justify-center rounded-full hover:bg-muted text-muted-foreground shrink-0"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setPickerOpen(true)}
+            className="w-fit"
+          >
+            <UserPlus className="size-3.5" />
+            {dict.reminderForm.chooseSomeone}
+          </Button>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor="description">{dict.reminderForm.description}</Label>
         <Textarea
           id="description"
@@ -134,6 +204,48 @@ export function ReminderEditForm({
           {dict.reminderForm.cancel}
         </Button>
       </div>
+
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent className="sm:max-w-xs">
+          <DialogHeader>
+            <DialogTitle>{dict.reminderForm.shareWith}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-1 max-h-72 overflow-y-auto -mx-1 px-1">
+            {loadingConnections ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : connections && connections.length > 0 ? (
+              connections.map((person) => (
+                <button
+                  key={person.id}
+                  type="button"
+                  onClick={() => {
+                    setSharedWith(person);
+                    setPickerOpen(false);
+                  }}
+                  className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-muted text-left"
+                >
+                  <Avatar size="default">
+                    {person.avatar_url && <AvatarImage src={person.avatar_url} alt={person.name} />}
+                    <AvatarFallback>{(person.name || person.username || "?").charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0 flex flex-col">
+                    <span className="text-sm font-semibold truncate">{person.name || "?"}</span>
+                    {person.username && (
+                      <span className="text-xs text-muted-foreground truncate">@{person.username}</span>
+                    )}
+                  </div>
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                {dict.reminderForm.noConnectionsToShare}
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }

@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MoreVertical, Pencil, Repeat, Trash2 } from "lucide-react";
+import { Link2, MoreVertical, Pencil, Repeat, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { ReminderOccurrence } from "@/types/reminder";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -38,6 +38,11 @@ export function ReminderListItem({
   const dateTimeLabel = showDate
     ? `${formatDayLabel(dict, occurrenceDate)} · ${reminder.time}`
     : reminder.time;
+  // Recipient of a shared reminder: view-only, same reasoning as
+  // reminder-detail-client.tsx (actual enforcement is RLS + the
+  // .eq("user_id", ...) guard on every mutating action, this only hides the
+  // controls that would otherwise silently fail for them).
+  const isReadOnly = reminder.isSharedWithMe === true;
 
   function handleToggleComplete() {
     startTransition(async () => {
@@ -79,7 +84,7 @@ export function ReminderListItem({
     >
       <Checkbox
         checked={isCompleted}
-        disabled={isPending}
+        disabled={isPending || isReadOnly}
         onCheckedChange={handleToggleComplete}
         className="size-5 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
         aria-label={dict.reminderList.markComplete(reminder.title)}
@@ -105,30 +110,38 @@ export function ReminderListItem({
         {reminder.repeat_rule && (
           <Repeat className="size-3.5 text-muted-foreground/70 shrink-0" />
         )}
+        {reminder.sharedWithUser && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+            <Link2 className="size-3.5" />
+            {dict.reminderList.sharedWith(reminder.sharedWithUser.name || "?")}
+          </span>
+        )}
       </Link>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-muted shrink-0"
-            aria-label={dict.reminderList.options}
-          >
-            <MoreVertical className="size-4 text-muted-foreground" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link href={`/app/reminder/${reminder.id}`}>
-              <Pencil className="size-4" />
-              {dict.reminderList.edit}
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem variant="destructive" onClick={handleDelete}>
-            <Trash2 className="size-4" />
-            {dict.reminderList.delete}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {!isReadOnly && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-muted shrink-0"
+              aria-label={dict.reminderList.options}
+            >
+              <MoreVertical className="size-4 text-muted-foreground" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link href={`/app/reminder/${reminder.id}`}>
+                <Pencil className="size-4" />
+                {dict.reminderList.edit}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" onClick={handleDelete}>
+              <Trash2 className="size-4" />
+              {dict.reminderList.delete}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 }

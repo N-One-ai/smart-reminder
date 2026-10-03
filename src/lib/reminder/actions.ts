@@ -37,12 +37,17 @@ export async function createReminder(rawInput: unknown): Promise<ActionResult<Re
       repeat_rule: input.recurrence,
       source: input.source,
       ai_confidence: input.ai_confidence,
+      shared_with_user_id: input.shared_with_user_id,
     })
     .select()
     .single();
 
   if (error || !data) {
     console.error("[createReminder]", error);
+    // Most likely cause when this specifically fails: shared_with_user_id
+    // was set but isn't an accepted Connection of the caller — the
+    // check_reminder_share trigger (see 0009) rejects the write rather than
+    // the app trusting the client's own "they're connected" belief.
     return err("DB_ERROR", "Không thể lưu lời nhắc. Vui lòng thử lại.");
   }
 
@@ -71,7 +76,11 @@ export async function updateReminder(
       ...(patch.date !== undefined && { date: patch.date }),
       ...(patch.time !== undefined && { time: patch.time }),
       ...(patch.recurrence !== undefined && { repeat_rule: patch.recurrence }),
+      ...(patch.shared_with_user_id !== undefined && { shared_with_user_id: patch.shared_with_user_id }),
     })
+    // Owner-only, unchanged — a recipient's own id never equals a reminder's
+    // user_id, so this filter alone already keeps them from ever matching a
+    // row here, before RLS is even considered.
     .eq("id", id)
     .eq("user_id", user.id)
     .select()

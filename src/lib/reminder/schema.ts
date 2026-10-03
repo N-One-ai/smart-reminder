@@ -32,6 +32,11 @@ export const reminderInputSchema = z.object({
   recurrence: recurrenceRuleSchema.nullable(),
   source: z.enum(["ai", "manual"]).default("manual"),
   ai_confidence: z.number().min(0).max(1).nullable().default(null),
+  // Just a UUID shape here — whether it's actually an accepted Connection of
+  // the caller is never trusted from the client and is re-enforced by the
+  // check_reminder_share trigger (see 0009) at write time, not by this
+  // schema.
+  shared_with_user_id: z.string().uuid().nullable().default(null),
 });
 
 export type ReminderInput = z.infer<typeof reminderInputSchema>;

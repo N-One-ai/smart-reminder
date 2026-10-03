@@ -20,6 +20,7 @@ export function toReminder(row: ReminderRow): Reminder {
     notified_at: row.notified_at,
     source: row.source,
     ai_confidence: row.ai_confidence,
+    shared_with_user_id: row.shared_with_user_id,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };

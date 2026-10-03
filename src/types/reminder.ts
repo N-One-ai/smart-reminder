@@ -1,3 +1,5 @@
+import type { PublicProfile } from "./profile";
+
 export type ReminderStatus = "pending" | "completed";
 export type ReminderSource = "ai" | "manual";
 export type RecurrenceFrequency = "daily" | "weekly" | "monthly" | "yearly";
@@ -24,8 +26,17 @@ export interface Reminder {
   notified_at: string | null; // last time a Notification fired for the current occurrence
   source: ReminderSource;
   ai_confidence: number | null;
+  /** The single accepted Connection this reminder is shared with, if any — set by the owner only. */
+  shared_with_user_id: string | null;
   created_at: string;
   updated_at: string;
+  /** Not a DB column — the "other party"'s public profile (the recipient if
+   * you're the owner, the owner if you're the recipient), resolved
+   * separately in lib/reminder/queries.ts for display ("🔗 Với ..."). */
+  sharedWithUser?: PublicProfile | null;
+  /** Not a DB column — true when the current viewer is the recipient, not
+   * the owner. Drives read-only UI (no edit/delete/complete). */
+  isSharedWithMe?: boolean;
 }
 
 /** A single computed occurrence of a reminder, expanded from repeat_rule for display. */

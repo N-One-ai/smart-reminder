@@ -127,6 +127,7 @@ const vi = {
     modeVoice: "Nói",
     modeScan: "Scan ảnh",
     placeholder: "Bạn cần nhớ điều gì?",
+    mentionSearchPlaceholder: "Tìm người...",
   },
   voiceScreen: {
     title: "Nói để nhập",
@@ -161,6 +162,7 @@ const vi = {
     options: "Tuỳ chọn",
     edit: "Chỉnh sửa",
     delete: "Xoá",
+    sharedWith: (name: string) => `Với ${name}`,
   },
   clarification: {
     answerPlaceholder: "Trả lời...",
@@ -175,6 +177,10 @@ const vi = {
     descriptionPlaceholder: "Ghi chú tuỳ chọn...",
     save: "Lưu",
     cancel: "Huỷ",
+    shareWith: "Chia sẻ với",
+    chooseSomeone: "Chọn người",
+    noConnectionsToShare: "Bạn chưa có kết nối nào để chia sẻ.",
+    removeShare: "Không chia sẻ",
   },
   quickEdit: {
     heading: "Sửa nhanh bằng câu nói",
@@ -212,6 +218,8 @@ const vi = {
     deleteConfirmOnce: "Hành động này không thể hoàn tác.",
     notFound: "Không tìm thấy lời nhắc này.",
     backHome: "Về trang chính",
+    sharedWith: (name: string) => `Với ${name}`,
+    sharedReadOnlyNotice: "Lời nhắc được chia sẻ — chỉ người tạo mới chỉnh sửa hoặc xoá được.",
   },
   auth: {
     welcomeBack: "Chào mừng trở lại",

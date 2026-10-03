@@ -129,6 +129,7 @@ const en = {
     modeVoice: "Speak",
     modeScan: "Scan photo",
     placeholder: "What do you need to remember?",
+    mentionSearchPlaceholder: "Find someone...",
   },
   voiceScreen: {
     title: "Speak to add",
@@ -163,6 +164,7 @@ const en = {
     options: "Options",
     edit: "Edit",
     delete: "Delete",
+    sharedWith: (name: string) => `With ${name}`,
   },
   clarification: {
     answerPlaceholder: "Reply...",
@@ -177,6 +179,10 @@ const en = {
     descriptionPlaceholder: "Optional note...",
     save: "Save",
     cancel: "Cancel",
+    shareWith: "Share with",
+    chooseSomeone: "Choose someone",
+    noConnectionsToShare: "You don't have any connections to share with yet.",
+    removeShare: "Don't share",
   },
   quickEdit: {
     heading: "Quick edit by voice",
@@ -214,6 +220,8 @@ const en = {
     deleteConfirmOnce: "This action cannot be undone.",
     notFound: "This reminder could not be found.",
     backHome: "Back to home",
+    sharedWith: (name: string) => `With ${name}`,
+    sharedReadOnlyNotice: "Shared reminder — only the creator can edit or delete it.",
   },
   auth: {
     welcomeBack: "Welcome back",

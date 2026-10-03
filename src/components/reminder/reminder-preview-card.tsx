@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, Calendar, Clock, Loader2, Repeat } from "lucide-react";
+import { Bell, Calendar, Clock, Link2, Loader2, Repeat } from "lucide-react";
 import type { AIParseResult } from "@/types/ai";
+import type { PublicProfile } from "@/types/profile";
 import { Button } from "@/components/ui/button";
 import { formatDayLabel } from "@/lib/utils/date";
 import { useDictionary } from "@/lib/i18n/locale-provider";
@@ -11,11 +12,16 @@ export function ReminderPreviewCard({
   saving = false,
   onConfirm,
   onEdit,
+  sharedWithUser,
 }: {
   result: AIParseResult;
   saving?: boolean;
   onConfirm: () => void;
   onEdit: () => void;
+  /** Set when the user @mentioned a Connection in the composer before
+   * parsing — resolved to a real profile UUID at selection time, never from
+   * AI output (see SmartInput's mention handling). */
+  sharedWithUser?: PublicProfile | null;
 }) {
   const dict = useDictionary();
   if (!result.date || !result.time || !result.title) return null;
@@ -46,6 +52,13 @@ export function ReminderPreviewCard({
           </div>
         </div>
       </div>
+
+      {sharedWithUser && (
+        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Link2 className="size-3.5" />
+          {dict.reminderDetail.sharedWith(sharedWithUser.name || "?")}
+        </span>
+      )}
 
       <div className="flex items-center gap-2">
         <Button size="sm" onClick={onConfirm} disabled={saving} className="flex-1">

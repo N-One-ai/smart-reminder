@@ -79,6 +79,7 @@ export interface Database {
           source: "ai" | "manual";
           ai_confidence: number | null;
           metadata: Record<string, unknown>;
+          shared_with_user_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -98,6 +99,7 @@ export interface Database {
           source?: "ai" | "manual";
           ai_confidence?: number | null;
           metadata?: Record<string, unknown>;
+          shared_with_user_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -117,6 +119,7 @@ export interface Database {
           source?: "ai" | "manual";
           ai_confidence?: number | null;
           metadata?: Record<string, unknown>;
+          shared_with_user_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -224,6 +227,27 @@ export interface Database {
           p256dh?: string;
           auth?: string;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      admin_users: {
+        Row: {
+          user_id: string;
+          role: "admin";
+          granted_by: string | null;
+          granted_at: string;
+        };
+        Insert: {
+          user_id: string;
+          role?: "admin";
+          granted_by?: string | null;
+          granted_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          role?: "admin";
+          granted_by?: string | null;
+          granted_at?: string;
         };
         Relationships: [];
       };
